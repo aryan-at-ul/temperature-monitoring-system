@@ -249,11 +249,11 @@ sudo systemctl status rabbitmq-server
 PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -c "SELECT 1;"
 ```
 
-### Common Issues
+<!-- ### Common Issues
 - **Port conflicts**: Ensure ports 8000-8010, 5000, 5432, 5672 are available
 - **Database connection errors**: Verify PostgreSQL is running and credentials are correct
 - **Module import errors**: Ensure virtual environment is activated
-- **RabbitMQ connection issues**: Check service status and restart if needed
+- **RabbitMQ connection issues**: Check service status and restart if needed -->
 
 ### Logs and Debugging
 - API logs: Check terminal running `python -m api.main`
