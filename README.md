@@ -148,6 +148,13 @@ INFO: Application startup complete.
 ```bash
 python dashboard/app.py
 ```
+
+Login to dasboard as a cusotmer or admin,
+
+*customer A, token : read_A_65_token_2025, type: read*
+
+
+
 **Output:**
 ```
 * Running on http://127.0.0.1:5000
