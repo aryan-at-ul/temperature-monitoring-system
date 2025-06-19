@@ -29,6 +29,8 @@ The goal is to simulate a real-world setup with mock data sources, data pipeline
   - **Customer B**: Real-time API with structured JSON data  
   This pipeline processes, validates, and publishes the data to a queue for insertion into the database.
 
+  *Extreeme assumption* : all csv col and json keys are the same, this is not possible, so this part does have a prepossesing, which cab be futher enhaced for customer keys to event key mapping, which makes the db entries unform.
+
 ---
 
 ⚠️ **Note**: The dashboard (built with Flask) is **not part of the official assignment**, but is added here to help test the API visually and confirm that data is flowing correctly.
