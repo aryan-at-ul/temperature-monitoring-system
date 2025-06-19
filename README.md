@@ -79,7 +79,7 @@ CREATE DATABASE temperature_db OWNER tm_user;
 GRANT ALL PRIVILEGES ON DATABASE temperature_db TO tm_user;
 \q
 
-# Initialize database schema
+# Initialize database schema (from scaratch, would recommend setting up using db dump)
 PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -f database/schema.sql
 
 # Load sample data (To replicate exact Dev env)
