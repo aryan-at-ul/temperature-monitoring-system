@@ -867,35 +867,5 @@
 
 (table is empty)
 
-### public.temperature_readings_history_2025_11
 
-(table is empty)
-
-### public.temperature_readings_history_2025_12
-
-(table is empty)
-
-### public.temperature_readings_history_2026_01
-
-(table is empty)
-
-### public.temperature_readings_history_2026_02
-
-(table is empty)
-
-### public.temperature_readings_history_2026_03
-
-(table is empty)
-
-### public.temperature_readings_history_2026_04
-
-(table is empty)
-
-### public.temperature_readings_history_2026_05
-
-(table is empty)
-
-### public.temperature_readings_history_2026_06
-
-(table is empty)
 
