@@ -233,7 +233,7 @@ Customer: F, Facility: facility_F_1, Unit: unit_F_1_3, Temp: -8.10F
 - `GET /api/v1/temperature/stats` - Temperature statistics
 - `GET /api/v1/admin/customers` - All customers (admin only)
 
-Complete API documentation available at `/docs` when API server is running.
+Complete API documentation available at `/docs` when API server is running. Ofline docs present in swagger_docs/index_offline.html (open in browser)
 
 ## Troubleshooting
 
