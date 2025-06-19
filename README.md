@@ -235,6 +235,37 @@ Customer: F, Facility: facility_F_1, Unit: unit_F_1_3, Temp: -8.10F
 
 Complete API documentation available at `/docs` when API server is running. Ofline docs present in swagger_docs/index_offline.html (open in browser)
 
+
+## Testing
+
+The project includes comprehensive unit tests, integration tests, and test coverage reporting to ensure code quality and reliability.
+
+### Prerequisites
+
+Install the required testing dependencies:
+
+```bash
+pip install pytest pytest-asyncio pytest-mock aioresponses
+```
+
+```bash
+# Test each module separately
+pytest tests/unit/simulation/ -v
+pytest tests/unit/database/ -v
+pytest tests/unit/api/test_services/ -v
+pytest tests/unit/api/test_endpoints/ -v
+pytest tests/test_integration_basic.py -v
+pytest tests/ -v
+
+```
+
+Test with coverage
+```bash
+pytest tests/ --cov=simulation --cov=database --cov=api --cov-report=term-missing --cov-report=html -v
+```
+then check : htmlcov/index.html
+
+
 ## Troubleshooting
 
 ### Service Status Checks
