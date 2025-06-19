@@ -461,34 +461,8 @@ curl -H "Authorization: Bearer read_B_66_token_2025" \
 - **Online**: Available at `http://localhost:8000/docs` when the API server is running
 - **Offline**: Complete documentation provided in `swagger_docs/index_offline.html`
 
-## 📁 Project Structure
 
-```
-temperature-monitoring-system/
-├── api/                     # FastAPI backend
-│   ├── main.py             # API server entry point
-│   ├── endpoints/          # API routes
-│   └── tests/              # API tests
-├── dashboard/              # Flask frontend
-│   └── app.py             # Dashboard entry point
-├── data_ingestion/         # Data collection pipeline
-│   ├── collectors/         # API and CSV collectors
-│   ├── processors/         # Data processing
-│   └── schedulers/         # Job scheduling
-├── simulation/             # Customer simulation
-│   ├── cli.py             # Command-line interface
-│   └── customers/          # Customer templates
-├── database/               # Database layer
-│   └── schema.sql          # Database schema
-├── scripts/                # Utility scripts
-│   ├── check_database_status.py
-│   └── clean_temperature_readings.py
-└── data/                   # Generated files
-    ├── csv_files/
-    └── assignment/
-```
-
-## 🎯 Customer Types
+<!-- ## 🎯 Customer Types
 
 ### API Customers
 - **A**: Pharma Corp A (Port 8001) - every 60 seconds
@@ -504,7 +478,7 @@ temperature-monitoring-system/
 - **I**: Food Storage Ltd I (Port 8009) - every 300 seconds
 - **J**: Local Business J (Port 8010) - every 300 seconds
 
----
+--- -->
 
 
 ## 🐞 Open Bugs
