@@ -323,6 +323,12 @@ python -m simulation.cli validate-assignment
    Unit 3: Chilled Room 2 ✓ (5000 sqft, 45°F)
 ```
 
+## Start API 
+```
+python -m api.main
+```
+
+
 ## 🧪 Testing
 
 ### API Endpoint Testing
