@@ -1,0 +1,92 @@
+
+{% extends "base.html" %}
+
+{% block title %}API Documentation - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h2 class="mb-3">
+            <i class="bi bi-file-earmark-code me-2"></i>API Documentation
+        </h2>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">API Endpoints</h5>
+            </div>
+            <div class="card-body">
+                <p>Base URL: <code>{{ api_base_url }}</code></p>
+                
+                <h6>Authentication</h6>
+                <p>All API requests require authentication using a Bearer token:</p>
+                <pre><code>Authorization: Bearer YOUR_API_TOKEN</code></pre>
+                
+                <h6>Customer Endpoints</h6>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item">
+                        <code>GET /customers/me</code> - Get information about the authenticated customer
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /customers/me/facilities</code> - Get facilities for the authenticated customer
+                    </li>
+                    <li class="list-group-item">
+                        <code>POST /customers/me/trigger-ingestion</code> - Trigger data ingestion for the authenticated customer
+                    </li>
+                </ul>
+                
+                <h6>Temperature Endpoints</h6>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item">
+                        <code>GET /temperatures</code> - Get temperature readings with filters
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /temperatures/latest</code> - Get latest temperature readings per unit
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /temperatures/statistics</code> - Get temperature statistics
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /temperatures/alerts</code> - Get temperature alerts
+                    </li>
+                </ul>
+                
+                <h6>Admin Endpoints</h6>
+                <ul class="list-group mb-3">
+                    <li class="list-group-item">
+                        <code>GET /admin/customers</code> - Get all customers (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /admin/customers/{id}/status</code> - Get customer status (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>PATCH /admin/customers/{id}/activate</code> - Activate customer (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>PATCH /admin/customers/{id}/deactivate</code> - Deactivate customer (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>POST /admin/customers/{id}/trigger-ingestion</code> - Trigger data ingestion for any customer (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /admin/system/overview</code> - System overview (admin only)
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /admin/system/alerts</code> - System alerts (admin only)
+                    </li>
+                </ul>
+                
+                <h6>Health Endpoints</h6>
+                <ul class="list-group">
+                    <li class="list-group-item">
+                        <code>GET /health</code> - Basic health check
+                    </li>
+                    <li class="list-group-item">
+                        <code>GET /health/detailed</code> - Detailed system health
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+            

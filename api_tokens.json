@@ -1,0 +1,45 @@
+{
+  "A": {
+    "read_token": "read_A_65_token_2025",
+    "write_token": "write_A_65_token_2025"
+  },
+  "B": {
+    "read_token": "read_B_66_token_2025",
+    "write_token": "write_B_66_token_2025"
+  },
+  "C": {
+    "read_token": "read_C_67_token_2025",
+    "write_token": "write_C_67_token_2025"
+  },
+  "D": {
+    "read_token": "read_D_68_token_2025",
+    "write_token": "write_D_68_token_2025"
+  },
+  "E": {
+    "read_token": "read_E_69_token_2025",
+    "write_token": "write_E_69_token_2025"
+  },
+  "F": {
+    "read_token": "read_F_70_token_2025",
+    "write_token": "write_F_70_token_2025"
+  },
+  "G": {
+    "read_token": "read_G_71_token_2025",
+    "write_token": "write_G_71_token_2025"
+  },
+  "H": {
+    "read_token": "read_H_72_token_2025",
+    "write_token": "write_H_72_token_2025"
+  },
+  "I": {
+    "read_token": "read_I_73_token_2025",
+    "write_token": "write_I_73_token_2025"
+  },
+  "J": {
+    "read_token": "read_J_74_token_2025",
+    "write_token": "write_J_74_token_2025"
+  },
+  "admin": {
+    "admin_token": "admin_A_65_admin_token_2025"
+  }
+}

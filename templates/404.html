@@ -1,0 +1,16 @@
+
+{% extends "base.html" %}
+
+{% block title %}Page Not Found - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="text-center mt-5">
+    <h1 class="display-1">404</h1>
+    <p class="lead">Page not found</p>
+    <p>The page you are looking for does not exist or has been moved.</p>
+    <a href="{{ url_for('index') }}" class="btn btn-primary">
+        <i class="bi bi-house-fill me-1"></i> Return to Dashboard
+    </a>
+</div>
+{% endblock %}
+        

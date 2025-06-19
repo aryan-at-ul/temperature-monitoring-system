@@ -1,0 +1,2 @@
+-- SQL stub for 003_add_indexes.sql
+-- TODO: add migration / schema

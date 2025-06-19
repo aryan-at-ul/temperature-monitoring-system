@@ -1,0 +1,2 @@
+-- SQL stub for 002_add_auth_tables.sql
+-- TODO: add migration / schema

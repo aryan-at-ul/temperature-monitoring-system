@@ -1,0 +1,2 @@
+-- SQL stub for 001_initial_schema.sql
+-- TODO: add migration / schema

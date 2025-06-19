@@ -1,0 +1,240 @@
+# simulation/config/templates.yaml
+customer_templates:
+  pharmaceutical:
+    name_pattern: "Pharma Corp {id}"
+    data_sharing_method: "api"
+    facilities_count_range: [1, 2]
+    facility_template:
+      name_pattern: "Pharma Facility {id}"
+      location_pool:
+        - city: "London"
+          country: "England"
+        - city: "Cambridge"
+          country: "England"
+        - city: "Oxford"
+          country: "England"
+      units_count_range: [2, 8]
+      unit_template:
+        name_pattern: "Ultra-Low Freezer {id}"
+        size_range: [50, 500]
+        size_unit: "sqm"
+        temperature_range: [-80, -60]
+        temperature_unit: "C"
+        data_frequency_range: [60, 300]
+        data_quality:
+          null_reading_probability: 0.0001
+          null_name_probability: 0.0
+          null_location_probability: 0.0
+          sensor_drift_factor: 1.0
+          equipment_reliability: "high"
+          timestamp_jitter_seconds: 0
+    csv_download_frequency_hours: [1, 4]
+    csv_update_frequency_minutes: [1, 5]
+    api_polling_frequency_minutes: [1, 5]
+    global_data_quality:
+      null_reading_probability: 0.0001
+      null_name_probability: 0.0
+      null_location_probability: 0.0
+      sensor_drift_factor: 1.0
+      equipment_reliability: "high"
+      timestamp_jitter_seconds: 0
+
+  food_storage:
+    name_pattern: "Food Storage Ltd {id}"
+    data_sharing_method: "csv"
+    facilities_count_range: [1, 3]
+    facility_template:
+      name_pattern: "Cold Storage {id}"
+      location_pool:
+        - city: "Manchester"
+          country: "England"
+        - city: "Birmingham"
+          country: "England"
+        - city: null
+          country: "England"
+      units_count_range: [1, 4]
+      unit_template:
+        name_pattern: "Freezer Unit {id}"
+        size_range: [1000, 10000]
+        size_unit: "sqft"
+        temperature_range: [-25, 5]
+        temperature_unit: "F"
+        data_frequency_range: [300, 900]
+        data_quality:
+          null_reading_probability: 0.002
+          null_name_probability: 0.1
+          null_location_probability: 0.2
+          sensor_drift_factor: 1.1
+          equipment_reliability: "medium"
+          timestamp_jitter_seconds: 5
+    csv_download_frequency_hours: [24, 24]
+    csv_update_frequency_minutes: [5, 5]
+    api_polling_frequency_minutes: [15, 30]
+    global_data_quality:
+      null_reading_probability: 0.002
+      null_name_probability: 0.1
+      null_location_probability: 0.2
+      sensor_drift_factor: 1.0
+      equipment_reliability: "medium"
+      timestamp_jitter_seconds: 5
+
+  small_business:
+    name_pattern: "Local Business {id}"
+    data_sharing_method: "csv"
+    facilities_count_range: [1, 1]
+    facility_template:
+      name_pattern: null
+      location_pool:
+        - city: null
+          country: "England"
+        - city: "Leeds"
+          country: "England"
+        - city: "Sheffield"
+          country: "England"
+      units_count_range: [1, 2]
+      unit_template:
+        name_pattern: null
+        size_range: [100, 1000]
+        size_unit: "sqm"
+        temperature_range: [-20, 0]
+        temperature_unit: "C"
+        data_frequency_range: [600, 1800]
+        data_quality:
+          null_reading_probability: 0.01
+          null_name_probability: 0.8
+          null_location_probability: 0.5
+          sensor_drift_factor: 1.3
+          equipment_reliability: "low"
+          timestamp_jitter_seconds: 30
+    csv_download_frequency_hours: [24, 72]
+    csv_update_frequency_minutes: [15, 30]
+    api_polling_frequency_minutes: [30, 60]
+    global_data_quality:
+      null_reading_probability: 0.01
+      null_name_probability: 0.6
+      null_location_probability: 0.4
+      sensor_drift_factor: 1.2
+      equipment_reliability: "low"
+      timestamp_jitter_seconds: 30
+
+  industrial:
+    name_pattern: "Industrial Corp {id}"
+    data_sharing_method: "api"
+    facilities_count_range: [2, 5]
+    facility_template:
+      name_pattern: "Plant {id}"
+      location_pool:
+        - city: "Newcastle"
+          country: "England"
+        - city: "Liverpool"
+          country: "England"
+        - city: "Glasgow"
+          country: "Scotland"
+        - city: "Cardiff"
+          country: "Wales"
+      units_count_range: [3, 10]
+      unit_template:
+        name_pattern: "Industrial Freezer {id}"
+        size_range: [5000, 50000]
+        size_unit: "sqft"
+        temperature_range: [-30, 10]
+        temperature_unit: "F"
+        data_frequency_range: [300, 600]
+        data_quality:
+          null_reading_probability: 0.005
+          null_name_probability: 0.0
+          null_location_probability: 0.0
+          sensor_drift_factor: 1.1
+          equipment_reliability: "medium"
+          timestamp_jitter_seconds: 10
+    csv_download_frequency_hours: [6, 12]
+    csv_update_frequency_minutes: [10, 20]
+    api_polling_frequency_minutes: [10, 20]
+    global_data_quality:
+      null_reading_probability: 0.005
+      null_name_probability: 0.0
+      null_location_probability: 0.0
+      sensor_drift_factor: 1.0
+      equipment_reliability: "medium"
+      timestamp_jitter_seconds: 10
+
+# Default template distribution for random generation
+default_distribution:
+ pharmaceutical: 0.1
+ food_storage: 0.4
+ small_business: 0.3
+ industrial: 0.2
+
+# Assignment-specific customers (exact match to requirements)
+assignment_customers:
+ A:
+   name: "Customer A"
+   data_sharing_method: "csv"
+   facilities_count_range: [1, 1]
+   facility_template:
+     name_pattern: null
+     location_pool:
+       - city: null
+         country: "England"
+     units_count_range: [1, 1]
+     unit_template:
+       name_pattern: null
+       size_range: [930, 930]
+       size_unit: "sqm"
+       temperature_range: [-20, -20]
+       temperature_unit: "C"
+       data_frequency_range: [300, 300]
+       data_quality:
+         null_reading_probability: 0.001
+         null_name_probability: 1.0
+         null_location_probability: 1.0
+         sensor_drift_factor: 1.0
+         equipment_reliability: "medium"
+         timestamp_jitter_seconds: 0
+   csv_download_frequency_hours: [24, 24]
+   csv_update_frequency_minutes: [5, 5]
+   global_data_quality:
+     null_reading_probability: 0.001
+     null_name_probability: 1.0
+     null_location_probability: 1.0
+     equipment_reliability: "medium"
+
+ B:
+   name: "Customer B"
+   data_sharing_method: "api"
+   facilities_count_range: [1, 1]
+   facility_template:
+     name_pattern: null
+     location_pool:
+       - city: "Manchester"
+         country: "England"
+     units_count_range: [3, 3]
+     unit_template:
+       # This will be overridden per unit
+       size_range: [5000, 50000]
+       size_unit: "sqft"
+       temperature_range: [0, 45]
+       temperature_unit: "F"
+       data_frequency_range: [900, 900]
+       data_quality:
+         null_reading_probability: 0.0005
+         null_name_probability: 0.0
+         null_location_probability: 0.0
+         sensor_drift_factor: 1.0
+         equipment_reliability: "high"
+         timestamp_jitter_seconds: 0
+   api_polling_frequency_minutes: [15, 15]
+   global_data_quality:
+     null_reading_probability: 0.0005
+     equipment_reliability: "high"
+   # Specific unit configurations for Customer B
+   specific_units:
+     - name: "Deep Freeze 1"
+       size: 50000
+       set_temperature: 0
+     - name: "Chilled Room 1"
+       size: 10000
+       set_temperature: 0
+     - name: "Chilled Room 2"
+       size: 5000
+       set_temperature: 45

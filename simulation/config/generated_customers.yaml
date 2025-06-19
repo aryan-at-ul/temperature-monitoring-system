@@ -1,0 +1,1568 @@
+customers:
+  A:
+    data_config:
+      api_polling_frequency_minutes: 1
+      data_sharing_method: api
+    data_quality:
+      equipment_reliability: high
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: api
+    facilities:
+    - city: Oxford
+      country: England
+      id: facility_A_1
+      name: Pharma Facility 1
+      units:
+      - data_frequency: 229
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_1_1
+        name: Ultra-Low Freezer 1
+        set_temperature: -74.2
+        size: 328
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 201
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_1_2
+        name: Ultra-Low Freezer 2
+        set_temperature: -78.4
+        size: 303
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 217
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_1_3
+        name: Ultra-Low Freezer 3
+        set_temperature: -64.8
+        size: 89
+        size_unit: sqm
+        temperature_unit: C
+    - city: London
+      country: England
+      id: facility_A_2
+      name: Pharma Facility 2
+      units:
+      - data_frequency: 226
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_1
+        name: Ultra-Low Freezer 1
+        set_temperature: -67.5
+        size: 235
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 83
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_2
+        name: Ultra-Low Freezer 2
+        set_temperature: -68.1
+        size: 252
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 67
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_3
+        name: Ultra-Low Freezer 3
+        set_temperature: -65.5
+        size: 414
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 180
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_4
+        name: Ultra-Low Freezer 4
+        set_temperature: -74.3
+        size: 121
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 208
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_5
+        name: Ultra-Low Freezer 5
+        set_temperature: -64.8
+        size: 171
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 103
+        data_quality:
+          equipment_reliability: high
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.0001
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_A_2_6
+        name: Ultra-Low Freezer 6
+        set_temperature: -66.4
+        size: 234
+        size_unit: sqm
+        temperature_unit: C
+    name: Pharma Corp A
+  B:
+    data_config:
+      csv_download_frequency_hours: 63
+      csv_update_frequency_minutes: 26
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: low
+      null_location_probability: 0.4
+      null_name_probability: 0.6
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: Sheffield
+      country: England
+      id: facility_B_1
+      name: null
+      units:
+      - data_frequency: 826
+        data_quality:
+          equipment_reliability: low
+          null_location_probability: 0.5
+          null_name_probability: 0.8
+          null_reading_probability: 0.01
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_B_1_1
+        name: null
+        set_temperature: -3.2
+        size: 864
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 1226
+        data_quality:
+          equipment_reliability: low
+          null_location_probability: 0.5
+          null_name_probability: 0.8
+          null_reading_probability: 0.01
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_B_1_2
+        name: null
+        set_temperature: -6.9
+        size: 868
+        size_unit: sqm
+        temperature_unit: C
+    name: Local Business B
+  C:
+    data_config:
+      api_polling_frequency_minutes: 11
+      data_sharing_method: api
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: api
+    facilities:
+    - city: Newcastle
+      country: England
+      id: facility_C_1
+      name: Plant 1
+      units:
+      - data_frequency: 479
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_1_1
+        name: Industrial Freezer 1
+        set_temperature: -16.3
+        size: 14999
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 307
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_1_2
+        name: Industrial Freezer 2
+        set_temperature: 9.4
+        size: 31304
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 448
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_1_3
+        name: Industrial Freezer 3
+        set_temperature: 0.4
+        size: 20676
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 536
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_1_4
+        name: Industrial Freezer 4
+        set_temperature: -22.2
+        size: 33132
+        size_unit: sqft
+        temperature_unit: F
+    - city: Newcastle
+      country: England
+      id: facility_C_2
+      name: Plant 2
+      units:
+      - data_frequency: 511
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_1
+        name: Industrial Freezer 1
+        set_temperature: -7.6
+        size: 21111
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 506
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_2
+        name: Industrial Freezer 2
+        set_temperature: 6.5
+        size: 5823
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 375
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_3
+        name: Industrial Freezer 3
+        set_temperature: 5.0
+        size: 49914
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 553
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_4
+        name: Industrial Freezer 4
+        set_temperature: -20.9
+        size: 34561
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 535
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_5
+        name: Industrial Freezer 5
+        set_temperature: -2.6
+        size: 46358
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 576
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_2_6
+        name: Industrial Freezer 6
+        set_temperature: -7.0
+        size: 39314
+        size_unit: sqft
+        temperature_unit: F
+    - city: Newcastle
+      country: England
+      id: facility_C_3
+      name: Plant 3
+      units:
+      - data_frequency: 381
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_3_1
+        name: Industrial Freezer 1
+        set_temperature: -2.7
+        size: 36963
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 440
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_3_2
+        name: Industrial Freezer 2
+        set_temperature: 2.7
+        size: 30496
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 425
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_3_3
+        name: Industrial Freezer 3
+        set_temperature: -7.9
+        size: 7521
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 373
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_3_4
+        name: Industrial Freezer 4
+        set_temperature: -13.2
+        size: 38388
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 492
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_3_5
+        name: Industrial Freezer 5
+        set_temperature: -16.7
+        size: 11410
+        size_unit: sqft
+        temperature_unit: F
+    - city: Cardiff
+      country: Wales
+      id: facility_C_4
+      name: Plant 4
+      units:
+      - data_frequency: 585
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_4_1
+        name: Industrial Freezer 1
+        set_temperature: -20.3
+        size: 28214
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 478
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_4_2
+        name: Industrial Freezer 2
+        set_temperature: -17.7
+        size: 37281
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 327
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_C_4_3
+        name: Industrial Freezer 3
+        set_temperature: -11.0
+        size: 34223
+        size_unit: sqft
+        temperature_unit: F
+    name: Industrial Corp C
+  D:
+    data_config:
+      api_polling_frequency_minutes: 14
+      data_sharing_method: api
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: api
+    facilities:
+    - city: Newcastle
+      country: England
+      id: facility_D_1
+      name: Plant 1
+      units:
+      - data_frequency: 556
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_1
+        name: Industrial Freezer 1
+        set_temperature: 3.7
+        size: 27932
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 457
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_2
+        name: Industrial Freezer 2
+        set_temperature: -7.4
+        size: 9189
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 535
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_3
+        name: Industrial Freezer 3
+        set_temperature: -6.5
+        size: 41569
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 582
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_4
+        name: Industrial Freezer 4
+        set_temperature: -17.6
+        size: 47150
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 584
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_5
+        name: Industrial Freezer 5
+        set_temperature: -0.6
+        size: 45567
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 365
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_6
+        name: Industrial Freezer 6
+        set_temperature: -12.1
+        size: 24792
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 476
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_7
+        name: Industrial Freezer 7
+        set_temperature: -29.5
+        size: 26345
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 507
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_1_8
+        name: Industrial Freezer 8
+        set_temperature: -7.6
+        size: 34658
+        size_unit: sqft
+        temperature_unit: F
+    - city: Cardiff
+      country: Wales
+      id: facility_D_2
+      name: Plant 2
+      units:
+      - data_frequency: 491
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_1
+        name: Industrial Freezer 1
+        set_temperature: -20.2
+        size: 29740
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 417
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_2
+        name: Industrial Freezer 2
+        set_temperature: 9.6
+        size: 49098
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 547
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_3
+        name: Industrial Freezer 3
+        set_temperature: -0.6
+        size: 36197
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 526
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_4
+        name: Industrial Freezer 4
+        set_temperature: -0.6
+        size: 48696
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 445
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_5
+        name: Industrial Freezer 5
+        set_temperature: -4.8
+        size: 35538
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 459
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_6
+        name: Industrial Freezer 6
+        set_temperature: -9.7
+        size: 29388
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 401
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_7
+        name: Industrial Freezer 7
+        set_temperature: -25.3
+        size: 20905
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 404
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_8
+        name: Industrial Freezer 8
+        set_temperature: -13.9
+        size: 17701
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 412
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_9
+        name: Industrial Freezer 9
+        set_temperature: -23.9
+        size: 26581
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 447
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_D_2_10
+        name: Industrial Freezer 10
+        set_temperature: -15.5
+        size: 46632
+        size_unit: sqft
+        temperature_unit: F
+    name: Industrial Corp D
+  E:
+    data_config:
+      csv_download_frequency_hours: 24
+      csv_update_frequency_minutes: 5
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: null
+      country: England
+      id: facility_E_1
+      name: Cold Storage 1
+      units:
+      - data_frequency: 617
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_1_1
+        name: Freezer Unit 1
+        set_temperature: -16.1
+        size: 6978
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 810
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_1_2
+        name: Freezer Unit 2
+        set_temperature: -2.9
+        size: 2354
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 471
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_1_3
+        name: Freezer Unit 3
+        set_temperature: -5.2
+        size: 1568
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 532
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_1_4
+        name: Freezer Unit 4
+        set_temperature: -20.6
+        size: 6996
+        size_unit: sqft
+        temperature_unit: F
+    - city: Birmingham
+      country: England
+      id: facility_E_2
+      name: Cold Storage 2
+      units:
+      - data_frequency: 839
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_2_1
+        name: Freezer Unit 1
+        set_temperature: -1.0
+        size: 4335
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 844
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_2_2
+        name: Freezer Unit 2
+        set_temperature: -7.9
+        size: 2003
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 745
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_E_2_3
+        name: Freezer Unit 3
+        set_temperature: -14.4
+        size: 4159
+        size_unit: sqft
+        temperature_unit: F
+    name: Food Storage Ltd E
+  F:
+    data_config:
+      api_polling_frequency_minutes: 11
+      data_sharing_method: api
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: api
+    facilities:
+    - city: Liverpool
+      country: England
+      id: facility_F_1
+      name: Plant 1
+      units:
+      - data_frequency: 432
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_1_1
+        name: Industrial Freezer 1
+        set_temperature: -26.5
+        size: 6891
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 554
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_1_2
+        name: Industrial Freezer 2
+        set_temperature: -14.9
+        size: 27761
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 495
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_1_3
+        name: Industrial Freezer 3
+        set_temperature: 4.1
+        size: 9499
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 419
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_1_4
+        name: Industrial Freezer 4
+        set_temperature: -6.5
+        size: 13522
+        size_unit: sqft
+        temperature_unit: F
+    - city: Newcastle
+      country: England
+      id: facility_F_2
+      name: Plant 2
+      units:
+      - data_frequency: 485
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_1
+        name: Industrial Freezer 1
+        set_temperature: -10.6
+        size: 47427
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 573
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_2
+        name: Industrial Freezer 2
+        set_temperature: -25.9
+        size: 18165
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 310
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_3
+        name: Industrial Freezer 3
+        set_temperature: -27.1
+        size: 38412
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 470
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_4
+        name: Industrial Freezer 4
+        set_temperature: 1.4
+        size: 19593
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 396
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_5
+        name: Industrial Freezer 5
+        set_temperature: -20.5
+        size: 5233
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 593
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_6
+        name: Industrial Freezer 6
+        set_temperature: -8.9
+        size: 47348
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 351
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_7
+        name: Industrial Freezer 7
+        set_temperature: -9.0
+        size: 45746
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 534
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_8
+        name: Industrial Freezer 8
+        set_temperature: -11.4
+        size: 41607
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 520
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_2_9
+        name: Industrial Freezer 9
+        set_temperature: -29.8
+        size: 11006
+        size_unit: sqft
+        temperature_unit: F
+    - city: Cardiff
+      country: Wales
+      id: facility_F_3
+      name: Plant 3
+      units:
+      - data_frequency: 464
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_1
+        name: Industrial Freezer 1
+        set_temperature: -20.9
+        size: 26499
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 518
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_2
+        name: Industrial Freezer 2
+        set_temperature: 2.2
+        size: 22658
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 513
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_3
+        name: Industrial Freezer 3
+        set_temperature: -19.8
+        size: 20729
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 329
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_4
+        name: Industrial Freezer 4
+        set_temperature: -23.4
+        size: 26036
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 354
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_5
+        name: Industrial Freezer 5
+        set_temperature: -29.8
+        size: 20366
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 404
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_6
+        name: Industrial Freezer 6
+        set_temperature: -6.1
+        size: 31048
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 527
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_7
+        name: Industrial Freezer 7
+        set_temperature: -3.0
+        size: 23900
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 340
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.005
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_F_3_8
+        name: Industrial Freezer 8
+        set_temperature: -5.9
+        size: 6495
+        size_unit: sqft
+        temperature_unit: F
+    name: Industrial Corp F
+  G:
+    data_config:
+      csv_download_frequency_hours: 24
+      csv_update_frequency_minutes: 5
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: Birmingham
+      country: England
+      id: facility_G_1
+      name: Cold Storage 1
+      units:
+      - data_frequency: 754
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_1_1
+        name: Freezer Unit 1
+        set_temperature: -23.8
+        size: 8872
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 312
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_1_2
+        name: Freezer Unit 2
+        set_temperature: -10.0
+        size: 7077
+        size_unit: sqft
+        temperature_unit: F
+    - city: Birmingham
+      country: England
+      id: facility_G_2
+      name: Cold Storage 2
+      units:
+      - data_frequency: 759
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_2_1
+        name: Freezer Unit 1
+        set_temperature: -14.2
+        size: 2542
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 855
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_2_2
+        name: Freezer Unit 2
+        set_temperature: -21.7
+        size: 9756
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 781
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_2_3
+        name: Freezer Unit 3
+        set_temperature: -1.5
+        size: 7768
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 579
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_G_2_4
+        name: Freezer Unit 4
+        set_temperature: -10.2
+        size: 1827
+        size_unit: sqft
+        temperature_unit: F
+    name: Food Storage Ltd G
+  H:
+    data_config:
+      csv_download_frequency_hours: 24
+      csv_update_frequency_minutes: 5
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: Manchester
+      country: England
+      id: facility_H_1
+      name: Cold Storage 1
+      units:
+      - data_frequency: 667
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_H_1_1
+        name: Freezer Unit 1
+        set_temperature: -7.2
+        size: 3245
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 389
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_H_1_2
+        name: Freezer Unit 2
+        set_temperature: -1.4
+        size: 5096
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 770
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_H_1_3
+        name: Freezer Unit 3
+        set_temperature: 1.5
+        size: 8328
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 555
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_H_1_4
+        name: Freezer Unit 4
+        set_temperature: -4.5
+        size: 2236
+        size_unit: sqft
+        temperature_unit: F
+    - city: Birmingham
+      country: England
+      id: facility_H_2
+      name: Cold Storage 2
+      units:
+      - data_frequency: 598
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_H_2_1
+        name: Freezer Unit 1
+        set_temperature: -7.5
+        size: 8002
+        size_unit: sqft
+        temperature_unit: F
+    name: Food Storage Ltd H
+  I:
+    data_config:
+      csv_download_frequency_hours: 24
+      csv_update_frequency_minutes: 5
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: medium
+      null_location_probability: 0.0
+      null_name_probability: 0.0
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: Manchester
+      country: England
+      id: facility_I_1
+      name: Cold Storage 1
+      units:
+      - data_frequency: 854
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_1_1
+        name: Freezer Unit 1
+        set_temperature: -9.4
+        size: 2123
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 723
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_1_2
+        name: Freezer Unit 2
+        set_temperature: -21.9
+        size: 8113
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 469
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_1_3
+        name: Freezer Unit 3
+        set_temperature: -13.8
+        size: 1686
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 700
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_1_4
+        name: Freezer Unit 4
+        set_temperature: 3.6
+        size: 4047
+        size_unit: sqft
+        temperature_unit: F
+    - city: Birmingham
+      country: England
+      id: facility_I_2
+      name: Cold Storage 2
+      units:
+      - data_frequency: 695
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_2_1
+        name: Freezer Unit 1
+        set_temperature: -8.6
+        size: 5038
+        size_unit: sqft
+        temperature_unit: F
+      - data_frequency: 578
+        data_quality:
+          equipment_reliability: medium
+          null_location_probability: 0.0
+          null_name_probability: 0.0
+          null_reading_probability: 0.002
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_I_2_2
+        name: Freezer Unit 2
+        set_temperature: -8.3
+        size: 3074
+        size_unit: sqft
+        temperature_unit: F
+    name: Food Storage Ltd I
+  J:
+    data_config:
+      csv_download_frequency_hours: 24
+      csv_update_frequency_minutes: 28
+      data_sharing_method: csv
+    data_quality:
+      equipment_reliability: low
+      null_location_probability: 0.4
+      null_name_probability: 0.6
+      null_reading_probability: 0.001
+      sensor_drift_factor: 1.0
+      timestamp_jitter_seconds: 0
+    data_sharing_method: csv
+    facilities:
+    - city: Leeds
+      country: England
+      id: facility_J_1
+      name: null
+      units:
+      - data_frequency: 1775
+        data_quality:
+          equipment_reliability: low
+          null_location_probability: 0.5
+          null_name_probability: 0.8
+          null_reading_probability: 0.01
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_J_1_1
+        name: null
+        set_temperature: -19.6
+        size: 595
+        size_unit: sqm
+        temperature_unit: C
+      - data_frequency: 1796
+        data_quality:
+          equipment_reliability: low
+          null_location_probability: 0.5
+          null_name_probability: 0.8
+          null_reading_probability: 0.01
+          sensor_drift_factor: 1.0
+          timestamp_jitter_seconds: 0
+        id: unit_J_1_2
+        name: null
+        set_temperature: -11.0
+        size: 761
+        size_unit: sqm
+        temperature_unit: C
+    name: Local Business J

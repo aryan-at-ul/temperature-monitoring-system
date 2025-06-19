@@ -1,0 +1,111 @@
+/* dashboard/static/css/dashboard.css */
+/* Global Styles */
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --warning-color: #ffc107;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.footer {
+    margin-top: auto;
+}
+
+/* Dashboard Cards */
+.card {
+    border-radius: 0.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: rgba(0, 0, 0, 0.03);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    padding: 0.75rem 1rem;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+/* Temperature Status Indicators */
+.status-normal {
+    color: var(--success-color);
+}
+
+.status-warning {
+    color: var(--warning-color);
+}
+
+.status-critical {
+    color: var(--danger-color);
+}
+
+.status-offline {
+    color: var(--secondary-color);
+}
+
+/* Facility Cards */
+.facility-card {
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+
+.facility-card:hover {
+    transform: translateY(-5px);
+}
+
+/* Alert Styling */
+.alert-item {
+    border-left: 4px solid var(--secondary-color);
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.75rem;
+    background-color: rgba(108, 117, 125, 0.1);
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning-color);
+    background-color: rgba(255, 193, 7, 0.1);
+}
+
+.alert-item.critical {
+    border-left-color: var(--danger-color);
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.alert-item.resolved {
+    opacity: 0.7;
+}
+
+.alert-time {
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: start !important;
+    }
+    
+    .card-header .d-flex > * {
+        margin-top: 0.5rem;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
