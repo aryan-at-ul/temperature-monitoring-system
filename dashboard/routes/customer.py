@@ -9,34 +9,6 @@ from utils import make_api_request, login_required
 
 customer_bp = Blueprint('customer', __name__)
 
-# @customer_bp.route('/')
-# @login_required
-# def dashboard():
-#     """Customer dashboard home page"""
-#     try:
-      
-#         customer_profile = make_api_request('/customers/profile')
-        
-       
-#         latest_readings = make_api_request('/temperature/latest')
-        
-      
-#         temp_stats = make_api_request('/temperature/stats')
-        
- 
-#         facilities = make_api_request('/facilities')
-        
-#         return render_template(
-#             'customer/dashboard.html',
-#             profile=customer_profile,
-#             latest_readings=latest_readings,
-#             temp_stats=temp_stats,
-#             facilities=facilities.get('items', [])
-#         )
-#     except Exception as e:
-#         flash(f"Error loading dashboard data: {str(e)}", "danger")
-#         return render_template('customer/dashboard.html')
-
 
 @customer_bp.route('/')
 @login_required
