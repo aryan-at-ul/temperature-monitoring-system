@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="mb-3">
+                    <i class="bi bi-speedometer2"></i> 
+                    Welcome to your Temperature Monitoring Dashboard
+                </h1>
+                <p class="lead">
+                    Hello, <strong>{{ profile.name }}</strong>! 
+                    Here's a summary of your temperature monitoring data.
+                </p>
+                <p>
+                    <span class="badge bg-primary">{{ profile.facility_count }} Facilities</span>
+                    <span class="badge bg-info">{{ profile.unit_count }} Storage Units</span>
+                    <span class="badge bg-secondary">{{ profile.active_readings_count }} Temperature Readings</span>
+                    {% if profile.last_reading_time %}
+                        <span class="badge bg-success">Last reading: {{ profile.last_reading_time }}</span>
+                    {% endif %}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-thermometer-half display-1 mb-3"></i>
+                <h5 class="card-title">Average Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_stats.avg_temperature) }}°{{ temp_stats.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-arrow-down-circle display-1 mb-3"></i>
+                <h5 class="card-title">Minimum Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_stats.min_temperature) }}°{{ temp_stats.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-arrow-up-circle display-1 mb-3"></i>
+                <h5 class="card-title">Maximum Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_stats.max_temperature) }}°{{ temp_stats.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-check-circle display-1 mb-3"></i>
+                <h5 class="card-title">Normal Readings</h5>
+                <h2 class="card-text">
+                    {{ temp_stats.normal_count }}
+                    <small>({{ (temp_stats.normal_count / temp_stats.reading_count * 100)|int }}%)</small>
+                </h2>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Chart -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Temperature Trends
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="temperatureChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Latest Readings and Facilities -->
+<div class="row">
+    <!-- Latest Readings -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history"></i> Latest Temperature Readings
+                </h5>
+                <a href="{{ url_for('customer.analytics') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-arrow-right"></i> View All
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Storage Unit</th>
+                                <th>Temperature</th>
+                                <th>Recorded At</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for reading in latest_readings[:10] %}
+                                <tr>
+                                    <td>
+                                        <a href="{{ url_for('customer.unit_details', unit_id=reading.storage_unit_id) }}">
+                                            {{ reading.unit_code or reading.storage_unit_id }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{ "%.1f"|format(reading.temperature) }}°{{ reading.temperature_unit }}
+                                    </td>
+                                    <td>{{ reading.recorded_at }}</td>
+                                    <td>
+                                        {% if reading.equipment_status == "normal" %}
+                                            <span class="badge bg-success">Normal</span>
+                                        {% elif reading.equipment_status == "warning" %}
+                                            <span class="badge bg-warning text-dark">Warning</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">{{ reading.equipment_status }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No temperature readings available</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Facilities -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-building"></i> Your Facilities
+                </h5>
+                <a href="{{ url_for('customer.facilities') }}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-arrow-right"></i> View All
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="list-group">
+                    {% for facility in facilities %}
+                        <a href="{{ url_for('customer.facility_details', facility_id=facility.id) }}" 
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="mb-1">{{ facility.name or facility.facility_code }}</h6>
+                                <small class="text-muted">{{ facility.city }}, {{ facility.country }}</small>
+                            </div>
+                            <span class="badge bg-primary rounded-pill">
+                                <i class="bi bi-thermometer"></i>
+                            </span>
+                        </a>
+                    {% else %}
+                        <div class="list-group-item text-center">
+                            <p class="mb-0">No facilities available</p>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Future ML/AI Insights (Placeholder) -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-cpu"></i> ML/AI Insights Preview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-calendar-event display-4 mb-3 text-info"></i>
+                                <h5 class="card-title">Temperature Forecasting</h5>
+                                <p class="card-text text-muted">Predictive temperature analysis for your storage units coming soon.</p>
+                                <a href="{{ url_for('customer.ml') }}" class="btn btn-sm btn-outline-info">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-exclamation-triangle display-4 mb-3 text-info"></i>
+                                <h5 class="card-title">Anomaly Detection</h5>
+                                <p class="card-text text-muted">Early warnings for temperature anomalies based on ML algorithms.</p>
+                                <a href="{{ url_for('customer.ml') }}" class="btn btn-sm btn-outline-info">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <i class="bi bi-lightning display-4 mb-3 text-info"></i>
+                                <h5 class="card-title">Energy Optimization</h5>
+                                <p class="card-text text-muted">ML-based recommendations for energy efficiency in your facilities.</p>
+                                <a href="{{ url_for('customer.ml') }}" class="btn btn-sm btn-outline-info">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get min/max temp values for Y-axis scaling
+    {% if temp_stats %}
+        const minTemp = {{ temp_stats.min_temperature }} - 10;
+        const maxTemp = {{ temp_stats.max_temperature }} + 10;
+    {% else %}
+        const minTemp = -30;
+        const maxTemp = 10;
+    {% endif %}
+    
+    // Get the context of the canvas element
+    const ctx = document.getElementById('temperatureChart').getContext('2d');
+    
+    // Create a date range for the past 7 days
+    const labels = [];
+    const now = new Date();
+    for (let i = 6; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString());
+    }
+    
+    // Sample data - in a real app, this would be from your API
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Average Temperature',
+                data: [
+                    {{ "%.1f"|format(temp_stats.avg_temperature) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.3) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature + 0.2) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.1) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature + 0.4) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.2) }},
+                    {{ "%.1f"|format(temp_stats.avg_temperature) }}
+                ],
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            },
+            {
+                label: 'Min Temperature',
+                data: [
+                    {{ "%.1f"|format(temp_stats.min_temperature) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature - 0.5) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature + 0.3) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature - 0.2) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature + 0.1) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature - 0.4) }},
+                    {{ "%.1f"|format(temp_stats.min_temperature) }}
+                ],
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.2
+            },
+            {
+                label: 'Max Temperature',
+                data: [
+                    {{ "%.1f"|format(temp_stats.max_temperature) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature - 0.2) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature + 0.5) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature - 0.3) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature + 0.2) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature - 0.1) }},
+                    {{ "%.1f"|format(temp_stats.max_temperature) }}
+                ],
+                borderColor: 'rgba(220, 53, 69, 1)',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.2
+            }
+        ]
+    };
+    
+    // Configuration options
+    const config = {
+        type: 'line',
+        data: data,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: minTemp,
+                    max: maxTemp,
+                    title: {
+                        display: true,
+                        text: 'Temperature (°{{ temp_stats.temperature_unit }})'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Temperature Trends (Past 7 Days)'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + '°{{ temp_stats.temperature_unit }}';
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Create the chart
+    new Chart(ctx, config);
+});
+</script>
+{% endblock %}

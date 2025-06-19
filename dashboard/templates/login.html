@@ -1,29 +1,66 @@
-<!-- dashboard/templates/login.html -->
 {% extends "base.html" %}
 
 {% block title %}Login - Temperature Monitoring System{% endblock %}
 
 {% block content %}
 <div class="row justify-content-center mt-5">
-    <div class="col-md-6">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    <i class="bi bi-key-fill me-2"></i>API Token Login
-                </h5>
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0 text-center">
+                    <i class="bi bi-thermometer-half"></i> Login
+                </h3>
             </div>
             <div class="card-body">
-                <form method="post" action="{{ url_for('login') }}">
+                {% if not api_status %}
+                    <div class="alert alert-danger">
+                        <i class="bi bi-exclamation-triangle"></i> API service is currently unavailable.
+                        Please try again later or contact support.
+                    </div>
+                {% endif %}
+                
+                <form method="POST" action="{{ url_for('login') }}">
+                    <div class="mb-3">
+                        <label for="customer_code" class="form-label">Customer Code</label>
+                        <input type="text" class="form-control" id="customer_code" name="customer_code" 
+                               placeholder="Enter your customer code (or 'admin')" required>
+                    </div>
+                    
                     <div class="mb-3">
                         <label for="token" class="form-label">API Token</label>
-                        <input type="password" class="form-control" id="token" name="token" required>
-                        <div class="form-text">Enter your API token to access the dashboard</div>
+                        <input type="password" class="form-control" id="token" name="token" 
+                               placeholder="Enter your API token" required>
                     </div>
-                    <button type="submit" class="btn btn-primary">Login</button>
+                    
+                    <div class="mb-3">
+                        <label for="token_type" class="form-label">Token Type</label>
+                        <select class="form-select" id="token_type" name="token_type">
+                            <option value="read">Read Token</option>
+                            <option value="write">Write Token</option>
+                            <option value="admin">Admin Token</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary" {% if not api_status %}disabled{% endif %}>
+                            <i class="bi bi-box-arrow-in-right"></i> Login
+                        </button>
+                    </div>
                 </form>
             </div>
-            <div class="card-footer text-muted">
-                <small>Need help? Contact your system administrator.</small>
+            <div class="card-footer text-center">
+                <div class="small">
+                    API Status: 
+                    {% if api_status %}
+                        <span class="text-success">
+                            <i class="bi bi-check-circle"></i> Online
+                        </span>
+                    {% else %}
+                        <span class="text-danger">
+                            <i class="bi bi-x-circle"></i> Offline
+                        </span>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

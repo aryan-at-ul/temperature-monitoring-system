@@ -1,0 +1,557 @@
+{% extends "base.html" %}
+
+{% block title %}{{ facility.name or facility.facility_code }} - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h1 class="mb-3">
+                            <i class="bi bi-building"></i> 
+                            {{ facility.name or facility.facility_code }}
+                        </h1>
+                        <p class="lead">
+                            <i class="bi bi-geo-alt"></i> {{ facility.city }}, {{ facility.country }}
+                        </p>
+                    </div>
+                    <div>
+                        <a href="{{ url_for('customer.facilities') }}" class="btn btn-outline-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Facilities
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facility Overview -->
+<div class="row mb-4">
+    <div class="col-lg-4">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-info-circle"></i> Facility Information
+                </h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tbody>
+                        <tr>
+                            <th>Facility Code</th>
+                            <td>{{ facility.facility_code }}</td>
+                        </tr>
+                        <tr>
+                            <th>Name</th>
+                            <td>{{ facility.name or '-' }}</td>
+                        </tr>
+                        <tr>
+                            <th>Location</th>
+                            <td>{{ facility.city }}, {{ facility.country }}</td>
+                        </tr>
+                        {% if facility.latitude and facility.longitude %}
+                            <tr>
+                                <th>Coordinates</th>
+                                <td>{{ facility.latitude }}, {{ facility.longitude }}</td>
+                            </tr>
+                        {% endif %}
+                        <tr>
+                            <th>Storage Units</th>
+                            <td>{{ facility.units|default([])|length }}</td>
+                        </tr>
+                        <tr>
+                            <th>Created At</th>
+                            <td>{{ facility.created_at }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-8">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Temperature Trend
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 250px; position: relative;">
+                    <canvas id="facilityTempChart"></canvas>
+                </div>
+                {% if not readings %}
+                    <div class="text-center mt-3">
+                        <p class="text-muted">No temperature readings available for this facility.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Storage Units -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-box"></i> Storage Units
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="exportUnitsBtn">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if facility.units and facility.units|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Unit Code</th>
+                                    <th>Name</th>
+                                    <th>Type</th>
+                                    <th>Size</th>
+                                    <th>Set Temperature</th>
+                                    <th>Current Temperature</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in facility.units %}
+                                    <tr>
+                                        <td>{{ unit.unit_code }}</td>
+                                        <td>{{ unit.name or '-' }}</td>
+                                        <td>{{ unit.equipment_type | capitalize }}</td>
+                                        <td>{{ unit.size_value }} {{ unit.size_unit }}</td>
+                                        <td>{{ "%.1f"|format(unit.set_temperature) }}°{{ unit.temperature_unit }}</td>
+                                        <td>
+                                            {% if unit.current_temperature %}
+                                                <span class="
+                                                    {% if unit.temperature_status == 'normal' %}
+                                                        text-success
+                                                    {% elif unit.temperature_status == 'warning' %}
+                                                        text-warning
+                                                    {% else %}
+                                                        text-danger
+                                                    {% endif %}
+                                                ">
+                                                    {{ "%.1f"|format(unit.current_temperature) }}°{{ unit.temperature_unit }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if unit.temperature_status == 'normal' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% elif unit.temperature_status == 'warning' %}
+                                                <span class="badge bg-warning text-dark">Warning</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ unit.temperature_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('customer.unit_details', unit_id=unit.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No storage units available for this facility.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Readings -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-clock-history"></i> Recent Temperature Readings
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary" id="exportReadingsBtn">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if readings and readings|length > 0 %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover" id="readingsTable">
+                            <thead>
+                                <tr>
+                                    <th>Timestamp</th>
+                                    <th>Storage Unit</th>
+                                    <th>Temperature</th>
+                                    <th>Sensor ID</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for reading in readings[:20] %}
+                                    <tr>
+                                        <td>{{ reading.recorded_at }}</td>
+                                        <td>
+                                            <a href="{{ url_for('customer.unit_details', unit_id=reading.storage_unit_id) }}">
+                                                {{ reading.unit_code or reading.storage_unit_id }}
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <span class="
+                                                {% if reading.equipment_status == 'normal' %}
+                                                    text-success
+                                                {% elif reading.equipment_status == 'warning' %}
+                                                    text-warning
+                                                {% else %}
+                                                    text-danger
+                                                {% endif %}
+                                            ">
+                                                {{ "%.1f"|format(reading.temperature) }}°{{ reading.temperature_unit }}
+                                            </span>
+                                        </td>
+                                        <td>{{ reading.sensor_id }}</td>
+                                        <td>
+                                            {% if reading.equipment_status == 'normal' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% elif reading.equipment_status == 'warning' %}
+                                                <span class="badge bg-warning text-dark">Warning</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ reading.equipment_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if readings|length > 20 %}
+                        <div class="text-center mt-3">
+                            <p class="text-muted">
+                                Showing 20 of {{ readings|length }} readings. 
+                                <a href="#" id="showAllReadingsBtn">Show all</a>
+                            </p>
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No temperature readings available for this facility.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Get min/max temp values for Y-axis scaling
+    {% if readings and readings|length > 0 %}
+        // Calculate min/max temperatures from readings
+        let minTemp = Infinity;
+        let maxTemp = -Infinity;
+        
+        {% for reading in readings %}
+            minTemp = Math.min(minTemp, {{ reading.temperature }});
+            maxTemp = Math.max(maxTemp, {{ reading.temperature }});
+        {% endfor %}
+        
+        // Add padding to min/max
+        minTemp = minTemp - 5;
+        maxTemp = maxTemp + 5;
+    {% else %}
+        const minTemp = -30;
+        const maxTemp = 10;
+    {% endif %}
+    
+    // Facility Temperature Chart
+    const facilityTempCtx = document.getElementById('facilityTempChart');
+    if (facilityTempCtx && {{ readings|default([])|length > 0 }}) {
+        // Group readings by timestamp (hourly)
+        const hourlyData = {};
+        const units = {};
+        
+        {% for reading in readings %}
+            // Extract date and hour
+            const timestamp = new Date('{{ reading.recorded_at }}');
+            const hourKey = timestamp.toISOString().substring(0, 13); // YYYY-MM-DDTHH
+            
+            // Initialize data structure if not exists
+            if (!hourlyData[hourKey]) {
+                hourlyData[hourKey] = {
+                    count: 0,
+                    sum: 0,
+                    min: Infinity,
+                    max: -Infinity
+                };
+            }
+            
+            // Update aggregates
+            hourlyData[hourKey].count++;
+            hourlyData[hourKey].sum += {{ reading.temperature }};
+            hourlyData[hourKey].min = Math.min(hourlyData[hourKey].min, {{ reading.temperature }});
+            hourlyData[hourKey].max = Math.max(hourlyData[hourKey].max, {{ reading.temperature }});
+            
+            // Track units
+            units['{{ reading.storage_unit_id }}'] = true;
+        {% endfor %}
+        
+        // Convert to arrays for chart
+        const labels = [];
+        const avgTemps = [];
+        const minTemps = [];
+        const maxTemps = [];
+        
+        // Sort by timestamp
+        const sortedHours = Object.keys(hourlyData).sort();
+        
+        // Take last 24 hours (or less if not enough data)
+        const hours = sortedHours.slice(-24);
+        
+        hours.forEach(hour => {
+            // Format label
+            const date = new Date(hour);
+            labels.push(date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ' ' + 
+                        date.toLocaleDateString([], { month: 'short', day: 'numeric' }));
+            
+            // Calculate average
+            const avgTemp = hourlyData[hour].sum / hourlyData[hour].count;
+            
+            avgTemps.push(avgTemp);
+            minTemps.push(hourlyData[hour].min);
+            maxTemps.push(hourlyData[hour].max);
+        });
+        
+        // Create chart
+        new Chart(facilityTempCtx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Average Temperature',
+                        data: avgTemps,
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        backgroundColor: 'rgba(54, 162, 235, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    },
+                    {
+                        label: 'Min Temperature',
+                        data: minTemps,
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Max Temperature',
+                        data: maxTemps,
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                        borderDash: [5, 5],
+                        fill: false,
+                        tension: 0.1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: minTemp,
+                        max: maxTemp,
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    },
+                    x: {
+                        ticks: {
+                            maxRotation: 45,
+                            minRotation: 45
+                        },
+                        title: {
+                            display: true,
+                            text: 'Time'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Facility Temperature Trend (' + Object.keys(units).length + ' Units)'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '°C';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    } else if (facilityTempCtx) {
+        // If no readings are available, display a message in the chart
+        new Chart(facilityTempCtx, {
+            type: 'bar',
+            data: {
+                labels: ['No Data'],
+                datasets: [{
+                    label: 'No temperature data available',
+                    data: [0],
+                    backgroundColor: 'rgba(200, 200, 200, 0.2)',
+                    borderColor: 'rgba(200, 200, 200, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        display: false
+                    },
+                    x: {
+                        display: false
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'No Temperature Data Available'
+                    },
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: false
+                    }
+                }
+            }
+        });
+    }
+    
+    // Export buttons
+    document.getElementById('exportUnitsBtn')?.addEventListener('click', function() {
+        // In a real app, this would call an API endpoint to download CSV
+        alert('CSV export functionality would be implemented here.');
+    });
+    
+    document.getElementById('exportReadingsBtn')?.addEventListener('click', function() {
+        // In a real app, this would call an API endpoint to download CSV
+        alert('CSV export functionality would be implemented here.');
+    });
+    
+    // Show all readings button
+    document.getElementById('showAllReadingsBtn')?.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // Get all readings
+        const allReadings = {{ readings|tojson|safe }};
+        const table = document.getElementById('readingsTable');
+        const tbody = table.querySelector('tbody');
+        
+        // Clear existing rows
+        tbody.innerHTML = '';
+        
+        // Add all readings
+        allReadings.forEach(reading => {
+            const row = document.createElement('tr');
+            
+            // Format timestamp
+            const timestamp = document.createElement('td');
+            timestamp.textContent = reading.recorded_at;
+            row.appendChild(timestamp);
+            
+            // Storage unit
+            const unit = document.createElement('td');
+            const unitLink = document.createElement('a');
+            unitLink.href = `/customer/unit/${reading.storage_unit_id}`;
+            unitLink.textContent = reading.unit_code || reading.storage_unit_id;
+            unit.appendChild(unitLink);
+            row.appendChild(unit);
+            
+            // Temperature
+            const temp = document.createElement('td');
+            const tempSpan = document.createElement('span');
+            tempSpan.textContent = `${reading.temperature.toFixed(1)}°${reading.temperature_unit}`;
+            
+            // Set appropriate class
+            if (reading.equipment_status === 'normal') {
+                tempSpan.className = 'text-success';
+            } else if (reading.equipment_status === 'warning') {
+                tempSpan.className = 'text-warning';
+            } else {
+                tempSpan.className = 'text-danger';
+            }
+            
+            temp.appendChild(tempSpan);
+            row.appendChild(temp);
+            
+            // Sensor ID
+            const sensor = document.createElement('td');
+            sensor.textContent = reading.sensor_id;
+            row.appendChild(sensor);
+            
+            // Status
+            const status = document.createElement('td');
+            const statusBadge = document.createElement('span');
+            
+            if (reading.equipment_status === 'normal') {
+                statusBadge.className = 'badge bg-success';
+                statusBadge.textContent = 'Normal';
+            } else if (reading.equipment_status === 'warning') {
+                statusBadge.className = 'badge bg-warning text-dark';
+                statusBadge.textContent = 'Warning';
+            } else {
+                statusBadge.className = 'badge bg-danger';
+                statusBadge.textContent = reading.equipment_status;
+            }
+            
+            status.appendChild(statusBadge);
+            row.appendChild(status);
+            
+            // Add row to table
+            tbody.appendChild(row);
+        });
+        
+        // Hide the "Show all" message
+        const showAllMessage = document.querySelector('#showAllReadingsBtn').parentNode.parentNode;
+        showAllMessage.style.display = 'none';
+        
+        // Add a message to indicate all readings are now shown
+        const allShownMessage = document.createElement('div');
+        allShownMessage.className = 'text-center mt-3';
+        allShownMessage.innerHTML = `<p class="text-muted">Showing all ${allReadings.length} readings.</p>`;
+        showAllMessage.parentNode.appendChild(allShownMessage);
+    });
+});
+</script>
+{% endblock %}

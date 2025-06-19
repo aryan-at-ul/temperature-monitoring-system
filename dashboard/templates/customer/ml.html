@@ -1,0 +1,550 @@
+{% extends "base.html" %}
+
+{% block title %}ML Insights - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="mb-3">
+                    <i class="bi bi-cpu"></i> 
+                    ML Insights (Preview)
+                </h1>
+                <p class="lead">
+                    Advanced machine learning analytics for your temperature monitoring system.
+                </p>
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    This feature is currently in preview. More ML-powered capabilities will be added soon.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ML Features Overview -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-calendar-event"></i> Temperature Forecasting</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Predict future temperature trends using Facebook Prophet time series forecasting models.
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Short-term predictions (24 hours)</li>
+                    <li class="list-group-item">Medium-term forecasts (7 days)</li>
+                    <li class="list-group-item">Long-term trends (30 days)</li>
+                </ul>
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle"></i> 
+                    Uses historical data patterns to predict future temperature values with confidence intervals.
+                </p>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline-info w-100" disabled>
+                    <i class="bi bi-graph-up"></i> Generate Forecast
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-exclamation-triangle"></i> Anomaly Detection</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Identify unusual temperature patterns that may indicate equipment failures or issues.
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Real-time anomaly detection</li>
+                    <li class="list-group-item">Historical pattern analysis</li>
+                    <li class="list-group-item">Early warning system</li>
+                </ul>
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle"></i> 
+                    Uses advanced algorithms to detect deviations from normal temperature patterns.
+                </p>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline-info w-100" disabled>
+                    <i class="bi bi-search"></i> Analyze Anomalies
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-lightning"></i> Energy Optimization</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Get ML-based recommendations to optimize energy consumption in your facilities.
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Energy usage patterns</li>
+                    <li class="list-group-item">Efficiency recommendations</li>
+                    <li class="list-group-item">Cost-saving projections</li>
+                </ul>
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle"></i> 
+                    Analyzes temperature and operational data to suggest optimal settings for energy efficiency.
+                </p>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline-info w-100" disabled>
+                    <i class="bi bi-lightbulb"></i> Get Recommendations
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card h-100 border-info">
+            <div class="card-header bg-info text-white">
+                <h5 class="card-title mb-0"><i class="bi bi-thermometer"></i> Temperature Diffusion</h5>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Model temperature distribution and diffusion patterns based on facility size and layout.
+                </p>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item">Spatial temperature mapping</li>
+                    <li class="list-group-item">Heat flow visualization</li>
+                    <li class="list-group-item">Optimal sensor placement</li>
+                </ul>
+                <p class="text-muted small">
+                    <i class="bi bi-info-circle"></i> 
+                    Uses mathematical models to predict temperature distribution across your storage facilities.
+                </p>
+            </div>
+            <div class="card-footer">
+                <button class="btn btn-outline-info w-100" disabled>
+                    <i class="bi bi-grid-3x3"></i> View Heat Map
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Prophet Forecasting Demo -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Temperature Forecasting Demo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <h5 class="card-title">Forecast Settings</h5>
+                                <form id="forecastForm">
+                                    <div class="mb-3">
+                                        <label for="facilitySelect" class="form-label">Facility</label>
+                                        <select class="form-select" id="facilitySelect" disabled>
+                                            <option selected>All Facilities</option>
+                                            <option>Facility 1</option>
+                                            <option>Facility 2</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="unitSelect" class="form-label">Storage Unit</label>
+                                        <select class="form-select" id="unitSelect" disabled>
+                                            <option selected>All Units</option>
+                                            <option>Unit 1</option>
+                                            <option>Unit 2</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="forecastPeriod" class="form-label">Forecast Period</label>
+                                        <select class="form-select" id="forecastPeriod" disabled>
+                                            <option value="24">24 Hours</option>
+                                            <option value="168" selected>7 Days</option>
+                                            <option value="720">30 Days</option>
+                                        </select>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="confidenceInterval" class="form-label">Confidence Interval</label>
+                                        <select class="form-select" id="confidenceInterval" disabled>
+                                            <option value="0.8">80%</option>
+                                            <option value="0.9" selected>90%</option>
+                                            <option value="0.95">95%</option>
+                                        </select>
+                                    </div>
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-primary" disabled>
+                                            <i class="bi bi-play"></i> Run Forecast
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <div class="forecast-placeholder text-center p-5 border rounded">
+                            <i class="bi bi-graph-up display-1 text-muted mb-3"></i>
+                            <h4 class="text-muted">Temperature Forecast Preview</h4>
+                            <p class="text-muted">
+                                This feature is coming soon. The forecast will display temperature predictions with confidence intervals.
+                            </p>
+                            <div class="sample-chart mt-4">
+                                <canvas id="forecastChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Anomaly Detection Demo -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Anomaly Detection Demo
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="anomaly-placeholder border rounded p-4">
+                            <canvas id="anomalyChart" height="250"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Detected Anomalies</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-info-circle"></i> 
+                                    Anomaly detection preview. This feature will identify unusual temperature patterns.
+                                </div>
+                                <ul class="list-group">
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-warning text-dark me-2">Warning</span>
+                                            <small>June 16, 2025 - 14:30</small>
+                                        </div>
+                                        <span>-1.8°C</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-danger me-2">Critical</span>
+                                            <small>June 17, 2025 - 02:15</small>
+                                        </div>
+                                        <span>-0.5°C</span>
+                                    </li>
+                                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <span class="badge bg-warning text-dark me-2">Warning</span>
+                                            <small>June 18, 2025 - 08:45</small>
+                                        </div>
+                                        <span>-1.9°C</span>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Diffusion Demo -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-thermometer"></i> Temperature Diffusion Model Preview
+                </h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i> 
+                    Coming Soon: Temperature diffusion modeling based on facility dimensions and sensor placement.
+                </div>
+                <div class="row">
+                    <div class="col-md-8 offset-md-2">
+                        <div class="diffusion-placeholder border rounded p-4 mb-3">
+                            <div class="diffusion-heatmap">
+                                <img src="https://via.placeholder.com/800x400?text=Temperature+Diffusion+Heat+Map" 
+                                     class="img-fluid rounded" alt="Temperature Diffusion Heat Map">
+                            </div>
+                        </div>
+                        <p class="text-muted">
+                            The temperature diffusion model will visualize how temperature changes propagate through your storage facilities,
+                            helping to optimize sensor placement and identify cold/hot spots.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Sample forecast chart
+    const forecastCtx = document.getElementById('forecastChart').getContext('2d');
+    
+    // Generate some sample data for the forecast chart
+    const today = new Date();
+    const labels = [];
+    const historicalData = [];
+    const forecastData = [];
+    const upperBound = [];
+    const lowerBound = [];
+    
+    // Historical data (past 7 days)
+    for (let i = 7; i >= 1; i--) {
+        const date = new Date(today);
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString());
+        
+        // Generate some random temperature data
+        const baseTemp = -3;
+        const randomVariation = Math.random() * 1.5 - 0.75;
+        historicalData.push(baseTemp + randomVariation);
+        
+        // No forecast for historical data
+        forecastData.push(null);
+        upperBound.push(null);
+        lowerBound.push(null);
+    }
+    
+    // Forecast data (next 7 days)
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() + i);
+        labels.push(date.toLocaleDateString());
+        
+        // Historical data ends
+        if (i > 0) {
+            historicalData.push(null);
+        } else {
+            // Today's data is both historical and the start of forecast
+            const baseTemp = -3;
+            const randomVariation = Math.random() * 1.5 - 0.75;
+            historicalData.push(baseTemp + randomVariation);
+        }
+        
+        // Generate forecast with some trend
+        const baseForecast = -3;
+        const trendFactor = i * 0.05;
+        const forecast = baseForecast - trendFactor;
+        forecastData.push(forecast);
+        
+        // Add confidence intervals
+        upperBound.push(forecast + 0.5 + i * 0.1);
+        lowerBound.push(forecast - 0.5 - i * 0.1);
+    }
+    
+    const forecastChartData = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Historical Data',
+                data: historicalData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                pointRadius: 3,
+                pointHoverRadius: 5
+            },
+            {
+                label: 'Forecast',
+                data: forecastData,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 3,
+                pointHoverRadius: 5
+            },
+            {
+                label: 'Upper Bound (90%)',
+                data: upperBound,
+                borderColor: 'rgba(255, 99, 132, 0.3)',
+                backgroundColor: 'rgba(0, 0, 0, 0)',
+                borderWidth: 1,
+                borderDash: [3, 3],
+                pointRadius: 0
+            },
+            {
+                label: 'Lower Bound (90%)',
+                data: lowerBound,
+                borderColor: 'rgba(255, 99, 132, 0.3)',
+                backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                borderWidth: 1,
+                borderDash: [3, 3],
+                pointRadius: 0,
+                fill: {
+                    target: '+1',
+                    above: 'rgba(255, 99, 132, 0.1)'
+                }
+            }
+        ]
+    };
+    
+    const forecastChartConfig = {
+        type: 'line',
+        data: forecastChartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Temperature Forecast with Prophet (Preview)'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false
+                },
+                legend: {
+                    position: 'top'
+                }
+            }
+        }
+    };
+    
+    new Chart(forecastCtx, forecastChartConfig);
+    
+    // Sample anomaly detection chart
+    const anomalyCtx = document.getElementById('anomalyChart').getContext('2d');
+    
+    // Generate sample data for anomaly chart
+    const anomalyLabels = [];
+    const normalData = [];
+    const anomalyPoints = [];
+    
+    // Generate time points for 24 hours
+    for (let i = 0; i < 24; i++) {
+        anomalyLabels.push(`${i}:00`);
+        
+        // Generate normal temperature data with some variation
+        const baseTemp = -3;
+        const hourlyVariation = Math.sin(i * Math.PI / 12) * 0.5; // Simulate daily cycle
+        const randomNoise = Math.random() * 0.3 - 0.15;
+        const temp = baseTemp + hourlyVariation + randomNoise;
+        
+        normalData.push(temp);
+        
+        // Add anomaly points at specific hours
+        if (i === 6 || i === 14 || i === 20) {
+            // Anomaly temperatures
+            if (i === 6) {
+                anomalyPoints.push(temp + 1.5); // Morning anomaly
+            } else if (i === 14) {
+                anomalyPoints.push(temp + 1.2); // Afternoon anomaly
+            } else {
+                anomalyPoints.push(temp - 1.8); // Evening anomaly
+            }
+        } else {
+            anomalyPoints.push(null);
+        }
+    }
+    
+    const anomalyChartData = {
+        labels: anomalyLabels,
+        datasets: [
+            {
+                label: 'Normal Temperature',
+                data: normalData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            },
+            {
+                label: 'Anomalies',
+                data: anomalyPoints,
+                borderColor: 'rgba(255, 99, 132, 1)',
+                backgroundColor: 'rgba(255, 99, 132, 1)',
+                pointStyle: 'triangle',
+                pointRadius: 8,
+                pointHoverRadius: 12,
+                showLine: false
+            }
+        ]
+    };
+    
+    const anomalyChartConfig = {
+        type: 'line',
+        data: anomalyChartData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    title: {
+                        display: true,
+                        text: 'Temperature (°C)'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Time'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Anomaly Detection (Preview)'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            if (context.dataset.label === 'Anomalies' && context.raw !== null) {
+                                return 'Anomaly: ' + context.raw.toFixed(1) + '°C (Deviation: ' + 
+                                       (context.raw - normalData[context.dataIndex]).toFixed(1) + '°C)';
+                            }
+                            return context.dataset.label + ': ' + context.raw.toFixed(1) + '°C';
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    new Chart(anomalyCtx, anomalyChartConfig);
+});
+</script>
+{% endblock %}

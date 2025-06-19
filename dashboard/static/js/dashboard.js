@@ -1,544 +1,304 @@
-/**
- * Main dashboard functionality
- */
-
-// Use the global API client
-const api = apiClient;
+// dashboard/static/js/dashboard.js
 
 /**
- * Initialize the dashboard
+ * Main dashboard JavaScript functionality
  */
-function initDashboard() {
-    // Check if we're on the dashboard page
-    if (document.getElementById('temperature-chart')) {
-        updateDashboard();
-    }
-}
 
-/**
- * Update the dashboard with latest data
- */
-async function updateDashboard() {
-    try {
-        // Show loading indicators
-        showLoadingState();
-        
-        // Get facility selector value if it exists
-        const facilitySelector = document.getElementById('facility-selector');
-        const facilityId = facilitySelector ? facilitySelector.value : 'all';
-        
-        // Get time range selector value if it exists
-        const timeRangeSelector = document.getElementById('time-range-selector');
-        const timeRange = timeRangeSelector ? timeRangeSelector.value : '24';
-        
-        console.log("Fetching data for facility:", facilityId, "time range:", timeRange);
-        
-        // Create params object with proper handling of 'all' facility
-        const params = {
-            // Only add facility_id if it's not 'all'
-            ...(facilityId !== 'all' && { facility_id: facilityId }),
-            hours: timeRange
-        };
-        
-        // Fetch data
-        const [temperatures, facilities, alerts] = await Promise.all([
-            api.getLatestTemperatures(params),
-            api.getCustomerFacilities(),
-            api.getTemperatureAlerts(params)
-        ]);
-        
-        console.log("Data fetched:", temperatures, facilities, alerts);
-        
-        // Update the dashboard components
-        updateTemperatureDisplay(temperatures.units || []);
-        updateFacilitiesDisplay(facilities.facilities || []);
-        updateAlertsDisplay(alerts.alerts || []);
-        
-        // Update facility selector options
-        if (facilitySelector && facilities.facilities) {
-            updateFacilitySelector(facilitySelector, facilities.facilities);
-        }
-        
-    } catch (error) {
-        console.error('Error updating dashboard:', error);
-        showErrorMessage('Failed to update dashboard. Please try again later.');
-    }
-}
-
-/**
- * Show loading state for dashboard components
- */
-function showLoadingState() {
-    const temperatureTable = document.getElementById('current-temps-table');
-    if (temperatureTable) {
-        const tbody = temperatureTable.querySelector('tbody');
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="5" class="text-center">
-                    <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                    Loading temperature data...
-                </td>
-            </tr>
-        `;
-    }
-    
-    const facilitiesContainer = document.getElementById('facilities-container');
-    if (facilitiesContainer) {
-        facilitiesContainer.innerHTML = `
-            <div class="col-12 text-center">
-                <div class="spinner-border text-primary mb-3" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p>Loading facilities data...</p>
-            </div>
-        `;
-    }
-    
-    const alertsContainer = document.getElementById('alerts-container');
-    if (alertsContainer) {
-        alertsContainer.innerHTML = `
-            <div class="text-center">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                Loading alerts...
-            </div>
-        `;
-    }
-}
-
-/**
- * Update temperature display with latest data
- * @param {Array} units - Temperature units data
- */
-function updateTemperatureDisplay(units) {
-    const temperatureTable = document.getElementById('current-temps-table');
-    if (!temperatureTable) return;
-    
-    const tbody = temperatureTable.querySelector('tbody');
-    
-    if (!units || units.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" class="text-center">No temperature data available</td></tr>';
-        return;
-    }
-    
-    // Sort units by status (critical first, then warning, then normal)
-    const sortedUnits = [...units].sort((a, b) => {
-        const statusOrder = { 'critical': 0, 'warning': 1, 'normal': 2 };
-        return (statusOrder[a.status] || 3) - (statusOrder[b.status] || 3);
-    });
-    
-    // Generate table rows
-    tbody.innerHTML = sortedUnits.map(unit => {
-        // Format status with appropriate styling
-        let statusHtml = '';
-        if (unit.status === 'critical') {
-            statusHtml = '<span class="badge bg-danger">Critical</span>';
-        } else if (unit.status === 'warning') {
-            statusHtml = '<span class="badge bg-warning text-dark">Warning</span>';
-        } else if (unit.status === 'normal') {
-            statusHtml = '<span class="badge bg-success">Normal</span>';
-        } else {
-            statusHtml = `<span class="badge bg-secondary">${unit.status || 'Unknown'}</span>`;
-        }
-        
-        // Format last updated time
-        const lastUpdated = unit.last_updated ? new Date(unit.last_updated) : null;
-        const timeAgo = lastUpdated ? getTimeAgo(lastUpdated) : 'Unknown';
-        
-        return `
-            <tr data-unit-id="${unit.unit_id}" class="unit-row" style="cursor: pointer">
-                <td>${unit.name || 'Unnamed Unit'}</td>
-                <td>${unit.facility_name || 'Unknown Facility'}</td>
-                <td>${unit.current_temperature !== undefined ? unit.current_temperature.toFixed(1) + '°' + (unit.unit || 'C') : 'N/A'}</td>
-                <td>${statusHtml}</td>
-                <td>${timeAgo}</td>
-            </tr>
-        `;
-    }).join('');
-    
-    // Add click event to show unit details
-    document.querySelectorAll('.unit-row').forEach(row => {
-        row.addEventListener('click', () => {
-            const unitId = row.dataset.unitId;
-            showUnitDetails(unitId, sortedUnits);
+// Initialize all tooltips
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips if Bootstrap 5 is loaded
+    if (typeof bootstrap !== 'undefined') {
+        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        tooltipTriggerList.map(function(tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
         });
-    });
-    
-    // Update temperature chart if it exists
-    const chartCanvas = document.getElementById('temperature-chart');
-    if (chartCanvas) {
-        updateTemperatureChart(chartCanvas, units);
     }
-}
 
-/**
- * Update facilities display
- * @param {Array} facilities - Facilities data
- */
-function updateFacilitiesDisplay(facilities) {
-    const facilitiesContainer = document.getElementById('facilities-container');
-    if (!facilitiesContainer) return;
-    
-    if (!facilities || facilities.length === 0) {
-        facilitiesContainer.innerHTML = '<div class="col-12 text-center">No facilities available</div>';
-        return;
-    }
-    
-    // Generate facility cards
-    facilitiesContainer.innerHTML = facilities.map(facility => {
-        return `
-            <div class="col-md-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">${facility.name || 'Unnamed Facility'}</h5>
-                    </div>
-                    <div class="card-body">
-                        <p><strong>Location:</strong> ${facility.city ? facility.city + ', ' + (facility.country || '') : 'Unknown'}</p>
-                        <p><strong>Units:</strong> ${facility.units_count || 0}</p>
-                    </div>
-                    <div class="card-footer">
-                        <button class="btn btn-sm btn-primary view-facility-btn" data-facility-id="${facility.id}">
-                            <i class="bi bi-eye"></i> View Details
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-    
-    // Add event listeners to view facility buttons
-    document.querySelectorAll('.view-facility-btn').forEach(button => {
-        button.addEventListener('click', () => {
-            const facilityId = button.getAttribute('data-facility-id');
-            const facilitySelector = document.getElementById('facility-selector');
-            if (facilitySelector) {
-                facilitySelector.value = facilityId;
-                updateDashboard();
+    // Auto-close alerts after 5 seconds
+    setTimeout(function() {
+        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+        alerts.forEach(function(alert) {
+            if (bootstrap && bootstrap.Alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            } else {
+                alert.style.display = 'none';
             }
         });
-    });
-}
-
-/**
- * Update alerts display
- * @param {Array} alerts - Alerts data
- */
-function updateAlertsDisplay(alerts) {
-    const alertsContainer = document.getElementById('alerts-container');
-    if (!alertsContainer) return;
+    }, 5000);
     
-    if (!alerts || alerts.length === 0) {
-        alertsContainer.innerHTML = '<div class="text-center text-muted">No alerts in the selected time period</div>';
-        return;
+    // Handle responsive navbar
+    const navbarToggler = document.querySelector('.navbar-toggler');
+    if (navbarToggler) {
+        navbarToggler.addEventListener('click', function() {
+            if (bootstrap && bootstrap.Collapse) {
+                const navbarCollapse = document.querySelector('#navbarNav');
+                const bsCollapse = new bootstrap.Collapse(navbarCollapse);
+                bsCollapse.toggle();
+            }
+        });
     }
     
-    // Sort alerts by timestamp (newest first) and severity
-    const sortedAlerts = [...alerts].sort((a, b) => {
-        // First by resolved status
-        if (a.resolved !== b.resolved) {
-            return a.resolved ? 1 : -1;
+    // Initialize any date pickers
+    const dateInputs = document.querySelectorAll('input[type="date"]');
+    dateInputs.forEach(function(input) {
+        // Set default value to today if not already set
+        if (!input.value) {
+            const today = new Date().toISOString().split('T')[0];
+            input.value = today;
         }
-        
-        // Then by severity
-        if (a.severity !== b.severity) {
-            return a.severity === 'critical' ? -1 : 1;
+    });
+    
+    // Add active class to current nav link
+    const currentPath = window.location.pathname;
+    const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
+    navLinks.forEach(function(link) {
+        const href = link.getAttribute('href');
+        if (href && currentPath.startsWith(href) && href !== '/') {
+            link.classList.add('active');
         }
-        
-        // Finally by timestamp
-        return new Date(b.timestamp) - new Date(a.timestamp);
     });
     
-    // Generate alert items
-    alertsContainer.innerHTML = sortedAlerts.map(alert => {
-        const timestamp = new Date(alert.timestamp);
-        const timeAgo = getTimeAgo(timestamp);
-        
-        return `
-            <div class="alert-item ${alert.severity} ${alert.resolved ? 'resolved' : ''}">
-                <div class="d-flex justify-content-between align-items-start">
-                    <div>
-                        <strong>
-                            ${alert.unit_name} - ${alert.facility_name}
-                            ${alert.resolved ? '<span class="badge bg-secondary ms-2">Resolved</span>' : ''}
-                        </strong>
-                        <div>${alert.message}</div>
-                    </div>
-                    <span class="alert-time">${timeAgo}</span>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-/**
- * Update facility selector options
- * @param {HTMLElement} selector - Facility selector element
- * @param {Array} facilities - Facilities data
- */
-function updateFacilitySelector(selector, facilities) {
-    // Save current selection
-    const currentValue = selector.value;
-    
-    // Clear existing options except the first one (All Facilities)
-    while (selector.options.length > 1) {
-        selector.remove(1);
-    }
-    
-    // Add facility options
-    facilities.forEach(facility => {
-        const option = document.createElement('option');
-        option.value = facility.id;
-        option.textContent = facility.name || 'Unnamed Facility';
-        selector.appendChild(option);
-    });
-    
-    // Restore selection if possible
-    if (currentValue && Array.from(selector.options).some(opt => opt.value === currentValue)) {
-        selector.value = currentValue;
-    }
-}
-
-/**
- * Update temperature chart
- * @param {HTMLElement} canvas - Chart canvas element
- * @param {Array} units - Temperature units data
- */
-function updateTemperatureChart(canvas, units) {
-    // This is a placeholder for the chart implementation
-    // In a real application, you would use Chart.js to create a chart
-    console.log('Updating temperature chart with', units.length, 'units');
-    
-    // Simple implementation to show something on the chart
-    if (window.temperatureChart) {
-        window.temperatureChart.destroy();
-    }
-    
-    const ctx = canvas.getContext('2d');
-    window.temperatureChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: ['Now'],
-            datasets: units.map((unit, index) => {
-                const colors = [
-                    'rgba(13, 110, 253, 1)',
-                    'rgba(25, 135, 84, 1)',
-                    'rgba(220, 53, 69, 1)',
-                    'rgba(255, 193, 7, 1)',
-                    'rgba(13, 202, 240, 1)',
-                    'rgba(111, 66, 193, 1)'
-                ];
-                return {
-                    label: unit.name || `Unit ${index + 1}`,
-                    data: [unit.current_temperature],
-                    borderColor: colors[index % colors.length],
-                    backgroundColor: colors[index % colors.length].replace('1)', '0.2)'),
-                    tension: 0.1
-                };
+    // Implement AJAX form submissions where needed
+    const ajaxForms = document.querySelectorAll('form[data-ajax="true"]');
+    ajaxForms.forEach(function(form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const url = form.getAttribute('action') || window.location.href;
+            const method = form.getAttribute('method') || 'POST';
+            
+            // Show loading indicator
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const originalBtnText = submitBtn ? submitBtn.innerHTML : '';
+            
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...';
+            }
+            
+            // Convert FormData to JSON
+            const jsonData = {};
+            formData.forEach(function(value, key) {
+                jsonData[key] = value;
+            });
+            
+            // Make API request
+            fetch(url, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(jsonData)
             })
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    beginAtZero: false,
-                    title: {
-                        display: true,
-                        text: 'Temperature (°C)'
-                    }
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
                 }
-            }
-        }
-    });
-}
-
-/**
- * Show unit details in a modal
- * @param {string} unitId - Unit ID
- * @param {Array} units - All units data
- */
-async function showUnitDetails(unitId, units) {
-    const unit = units.find(u => u.unit_id === unitId);
-    if (!unit) return;
-    
-    // Populate modal with unit data
-    document.getElementById('modal-unit-name').textContent = unit.name || 'Unnamed Unit';
-    document.getElementById('modal-facility-name').textContent = unit.facility_name || 'Unknown Facility';
-    document.getElementById('modal-current-temp').textContent = unit.current_temperature !== undefined ? 
-        `${unit.current_temperature.toFixed(1)}°${unit.unit || 'C'}` : 'N/A';
-    document.getElementById('modal-target-temp').textContent = unit.set_temperature !== undefined ? 
-        `${unit.set_temperature.toFixed(1)}°${unit.unit || 'C'}` : 'N/A';
-    
-    // Format status with appropriate styling
-    let statusHtml = '';
-    if (unit.status === 'critical') {
-        statusHtml = '<span class="badge bg-danger">Critical</span>';
-    } else if (unit.status === 'warning') {
-        statusHtml = '<span class="badge bg-warning text-dark">Warning</span>';
-    } else if (unit.status === 'normal') {
-        statusHtml = '<span class="badge bg-success">Normal</span>';
-    } else {
-        statusHtml = `<span class="badge bg-secondary">${unit.status || 'Unknown'}</span>`;
-    }
-    document.getElementById('modal-status').innerHTML = statusHtml;
-    
-    // Additional data if available
-    document.getElementById('modal-equipment-type').textContent = unit.equipment_type || 'N/A';
-    document.getElementById('modal-size').textContent = unit.size_value ? 
-        `${unit.size_value} ${unit.size_unit || ''}` : 'N/A';
-    document.getElementById('modal-last-update').textContent = unit.last_updated ? 
-        new Date(unit.last_updated).toLocaleString() : 'N/A';
-    
-    // Try to get history data
-    try {
-        const response = await api.getTemperatures({
-            unit_id: unitId,
-            hours: 24,
-            limit: 24
+                return response.json();
+            })
+            .then(data => {
+                // Show success message
+                showAlert('success', data.message || 'Operation completed successfully!');
+                
+                // Handle callback if specified
+                const callback = form.getAttribute('data-callback');
+                if (callback && typeof window[callback] === 'function') {
+                    window[callback](data);
+                }
+                
+                // Reset form if needed
+                if (form.getAttribute('data-reset') === 'true') {
+                    form.reset();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'An error occurred: ' + error.message);
+            })
+            .finally(() => {
+                // Restore submit button
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalBtnText;
+                }
+            });
         });
-        
-        // Update unit history chart
-        const chartCanvas = document.getElementById('unit-history-chart');
-        if (chartCanvas && response.readings && response.readings.length > 0) {
-            renderUnitHistoryChart(chartCanvas, response.readings, unit);
-        } else {
-            document.getElementById('unit-history-chart').parentNode.innerHTML = 
-                '<div class="alert alert-info">No historical data available for this unit</div>';
-        }
-    } catch (error) {
-        console.error('Error fetching unit history:', error);
-        document.getElementById('unit-history-chart').parentNode.innerHTML = 
-            '<div class="alert alert-danger">Failed to load history data</div>';
-    }
-    
-    // Show the modal
-    const modal = new bootstrap.Modal(document.getElementById('unit-detail-modal'));
-    modal.show();
-}
-
-/**
- * Render unit history chart
- * @param {HTMLElement} canvas - Chart canvas element
- * @param {Array} readings - Temperature readings
- * @param {Object} unit - Unit information
- */
-function renderUnitHistoryChart(canvas, readings, unit) {
-    // Sort readings by timestamp
-    const sortedReadings = [...readings].sort((a, b) => 
-        new Date(a.timestamp) - new Date(b.timestamp));
-    
-    // Extract data for chart
-    const labels = sortedReadings.map(reading => {
-        const date = new Date(reading.timestamp);
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     });
     
-    const temperatures = sortedReadings.map(reading => reading.temperature);
+    // Implement confirmation dialogs
+    const confirmBtns = document.querySelectorAll('[data-confirm]');
+    confirmBtns.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+            const message = btn.getAttribute('data-confirm') || 'Are you sure you want to proceed?';
+            if (!confirm(message)) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    });
     
-    // Create reference line for set temperature
-    const setTemperature = Array(labels.length).fill(unit.set_temperature || null);
+    // Global temperature status updater
+    updateTemperatureStatuses();
+});
+
+/**
+ * Show an alert message
+ * @param {string} type - Bootstrap alert type (success, danger, warning, info)
+ * @param {string} message - The message to display
+ * @param {boolean} dismissible - Whether the alert should be dismissible
+ */
+function showAlert(type, message, dismissible = true) {
+    const alertContainer = document.getElementById('alertContainer') || document.createElement('div');
     
-    if (window.unitHistoryChart) {
-        window.unitHistoryChart.destroy();
+    if (!document.getElementById('alertContainer')) {
+        alertContainer.id = 'alertContainer';
+        alertContainer.style.position = 'fixed';
+        alertContainer.style.top = '20px';
+        alertContainer.style.right = '20px';
+        alertContainer.style.zIndex = '9999';
+        document.body.appendChild(alertContainer);
     }
     
-    const ctx = canvas.getContext('2d');
-    window.unitHistoryChart = new Chart(ctx, {
-        type: 'line',
-        data: {
-            labels: labels,
-            datasets: [
-                {
-                    label: 'Temperature',
-                    data: temperatures,
-                    borderColor: 'rgba(13, 110, 253, 1)',
-                    backgroundColor: 'rgba(13, 110, 253, 0.1)',
-                    fill: true,
-                    tension: 0.1
-                },
-                {
-                    label: 'Set Temperature',
-                    data: setTemperature,
-                    borderColor: 'rgba(25, 135, 84, 1)',
-                    borderDash: [5, 5],
-                    fill: false,
-                    pointRadius: 0
-                }
-            ]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: {
-                    title: {
-                        display: true,
-                        text: `Temperature (°${unit.unit || 'C'})`
-                    }
-                },
-                x: {
-                    title: {
-                        display: true,
-                        text: 'Time'
-                    }
-                }
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} fade show`;
+    if (dismissible) {
+        alert.className += ' alert-dismissible';
+        alert.innerHTML = `
+            <div>${message}</div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        `;
+    } else {
+        alert.innerHTML = message;
+    }
+    
+    alertContainer.appendChild(alert);
+    
+    // Auto-close after 5 seconds
+    setTimeout(function() {
+        if (bootstrap && bootstrap.Alert) {
+            const bsAlert = new bootstrap.Alert(alert);
+            bsAlert.close();
+        } else {
+            alert.style.display = 'none';
+            if (alertContainer.contains(alert)) {
+                alertContainer.removeChild(alert);
             }
         }
-    });
-}
-
-/**
- * Show error message on the dashboard
- * @param {string} message - Error message
- */
-function showErrorMessage(message) {
-    // Create alert element
-    const alertDiv = document.createElement('div');
-    alertDiv.className = 'alert alert-danger alert-dismissible fade show';
-    alertDiv.innerHTML = `
-        <strong>Error:</strong> ${message}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    `;
-    
-    // Find a good place to show the alert
-    const container = document.querySelector('.container-fluid');
-    if (container) {
-        container.insertBefore(alertDiv, container.firstChild);
-    }
-    
-    // Auto-dismiss after 5 seconds
-    setTimeout(() => {
-        alertDiv.classList.remove('show');
-        setTimeout(() => alertDiv.remove(), 150);
     }, 5000);
 }
 
 /**
- * Get time ago string from date
- * @param {Date} date - Date to format
- * @returns {string} - Formatted time ago string
+ * Format temperature with the appropriate unit
+ * @param {number} temp - The temperature value
+ * @param {string} unit - The temperature unit (C, F, K)
+ * @returns {string} - Formatted temperature string
  */
-function getTimeAgo(date) {
-    const now = new Date();
-    const diffMs = now - date;
-    const diffSec = Math.round(diffMs / 1000);
-    const diffMin = Math.round(diffSec / 60);
-    const diffHour = Math.round(diffMin / 60);
-    const diffDay = Math.round(diffHour / 24);
+function formatTemperature(temp, unit) {
+    return `${temp.toFixed(1)}°${unit}`;
+}
+
+/**
+ * Get temperature status class based on the value and range
+ * @param {number} temp - The temperature value
+ * @param {number} setTemp - The set point temperature
+ * @param {number} warningThreshold - Warning threshold deviation
+ * @param {number} criticalThreshold - Critical threshold deviation
+ * @returns {string} - CSS class for the temperature status
+ */
+function getTemperatureStatusClass(temp, setTemp, warningThreshold = 2, criticalThreshold = 5) {
+    const deviation = Math.abs(temp - setTemp);
     
-    if (diffSec < 60) {
-        return `${diffSec} second${diffSec !== 1 ? 's' : ''} ago`;
-    } else if (diffMin < 60) {
-        return `${diffMin} minute${diffMin !== 1 ? 's' : ''} ago`;
-    } else if (diffHour < 24) {
-        return `${diffHour} hour${diffHour !== 1 ? 's' : ''} ago`;
+    if (deviation <= warningThreshold) {
+        return 'temp-normal';
+    } else if (deviation <= criticalThreshold) {
+        return 'temp-warning';
     } else {
-        return `${diffDay} day${diffDay !== 1 ? 's' : ''} ago`;
+        return 'temp-danger';
     }
 }
 
-// Initialize when the DOM is loaded
-document.addEventListener('DOMContentLoaded', initDashboard);
+/**
+ * Update all temperature status indicators
+ */
+function updateTemperatureStatuses() {
+    const tempElements = document.querySelectorAll('[data-temp]');
+    
+    tempElements.forEach(function(element) {
+        const temp = parseFloat(element.getAttribute('data-temp'));
+        const setTemp = parseFloat(element.getAttribute('data-set-temp') || 0);
+        const unit = element.getAttribute('data-unit') || 'C';
+        const warningThreshold = parseFloat(element.getAttribute('data-warning') || 2);
+        const criticalThreshold = parseFloat(element.getAttribute('data-critical') || 5);
+        
+        // Update temperature display
+        element.textContent = formatTemperature(temp, unit);
+        
+        // Update status class
+        element.classList.remove('temp-normal', 'temp-warning', 'temp-danger');
+        element.classList.add(getTemperatureStatusClass(temp, setTemp, warningThreshold, criticalThreshold));
+    });
+}
+
+/**
+ * Format date and time
+ * @param {string} dateString - The date string to format
+ * @returns {string} - Formatted date string
+ */
+function formatDateTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+}
+
+/**
+ * Format date only
+ * @param {string} dateString - The date string to format
+ * @returns {string} - Formatted date string
+ */
+function formatDate(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString();
+}
+
+/**
+ * Format time only
+ * @param {string} dateString - The date string to format
+ * @returns {string} - Formatted time string
+ */
+function formatTime(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleTimeString();
+}
+
+/**
+ * Create a loading spinner
+ * @returns {HTMLElement} - The spinner element
+ */
+function createLoadingSpinner() {
+    const spinner = document.createElement('div');
+    spinner.className = 'loading-spinner';
+    return spinner;
+}
+
+/**
+ * Fetch data from the API
+ * @param {string} endpoint - The API endpoint to fetch
+ * @param {object} options - Fetch options
+ * @returns {Promise} - Fetch promise
+ */
+async function fetchApi(endpoint, options = {}) {
+    try {
+        const response = await fetch(endpoint, options);
+        
+        if (!response.ok) {
+            throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error('API fetch error:', error);
+        showAlert('danger', `API request failed: ${error.message}`);
+        throw error;
+    }
+}

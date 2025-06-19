@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+
+{% block title %}Error - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center mt-5">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-body text-center py-5">
+                    <div class="mb-4">
+                        {% if error == "Page not found" %}
+                            <i class="bi bi-question-circle display-1 text-warning"></i>
+                        {% else %}
+                            <i class="bi bi-exclamation-triangle display-1 text-danger"></i>
+                        {% endif %}
+                    </div>
+                    
+                    <h1 class="mb-4">
+                        {% if error == "Page not found" %}
+                            404 - Page Not Found
+                        {% else %}
+                            {{ error }}
+                        {% endif %}
+                    </h1>
+                    
+                    <p class="lead mb-4">
+                        {% if error == "Page not found" %}
+                            The page you are looking for does not exist or has been moved.
+                        {% else %}
+                            Something went wrong while processing your request.
+                        {% endif %}
+                    </p>
+                    
+                    <div class="mt-4">
+                        <a href="{{ url_for('index') }}" class="btn btn-primary me-2">
+                            <i class="bi bi-house"></i> Go to Dashboard
+                        </a>
+                        <button class="btn btn-outline-secondary" onclick="window.history.back()">
+                            <i class="bi bi-arrow-left"></i> Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="card-title mb-0">Need Help?</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <i class="bi bi-question-circle display-4 text-primary"></i>
+                            <h5 class="mt-2">Check Documentation</h5>
+                            <p class="small text-muted">
+                                Refer to the system documentation for usage instructions
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <i class="bi bi-heart-pulse display-4 text-success"></i>
+                            <h5 class="mt-2">System Status</h5>
+                            <p class="small text-muted">
+                                <a href="{{ url_for('common.health') }}">Check the system health status</a>
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-center">
+                            <i class="bi bi-headset display-4 text-info"></i>
+                            <h5 class="mt-2">Contact Support</h5>
+                            <p class="small text-muted">
+                                Email support at support@example.com
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

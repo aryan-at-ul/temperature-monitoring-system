@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Facilities - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="mb-3">
+                    <i class="bi bi-building"></i> 
+                    Facilities
+                </h1>
+                <p class="lead">
+                    View and manage your temperature-controlled facilities.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facilities Grid -->
+<div class="row mb-4">
+    {% if facilities %}
+        {% for facility in facilities %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="card facility-card h-100 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">{{ facility.name or facility.facility_code }}</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <i class="bi bi-geo-alt text-muted"></i> 
+                            {{ facility.city }}, {{ facility.country }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <i class="bi bi-box text-muted"></i> Storage Units
+                                </div>
+                                <span class="badge bg-info">
+                                    {% if facility.units is defined %}
+                                        {{ facility.units|length }}
+                                    {% elif facility.unit_count is defined %}
+                                        {{ facility.unit_count }}
+                                    {% else %}
+                                        <!-- Fetch unit count from API -->
+                                        <span class="unit-count" data-facility-id="{{ facility.id }}">...</span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <i class="bi bi-thermometer text-muted"></i> Temperature Status
+                                </div>
+                                <span class="badge bg-success">
+                                    <!-- This is a placeholder, in a real app you'd calculate this -->
+                                    Normal
+                                </span>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <i class="bi bi-clock-history text-muted"></i> Last Reading
+                                </div>
+                                <small class="text-muted">
+                                    <!-- This is a placeholder, in a real app you'd calculate this -->
+                                    {{ facility.last_reading_time|default('N/A') }}
+                                </small>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{{ url_for('customer.facility_details', facility_id=facility.id) }}" class="btn btn-primary">
+                                <i class="bi bi-eye"></i> View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    {% else %}
+        <div class="col-md-12">
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle"></i> No facilities found.
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Facilities Map -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-map"></i> Facilities Map
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="map-placeholder bg-light rounded p-5 text-center">
+                    <i class="bi bi-map display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">Facility Map Visualization</h4>
+                    <p class="text-muted">
+                        Geographic visualization of your facilities and their current temperature status.
+                        <br>
+                        <small>(This feature will be available soon)</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Overview -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-thermometer"></i> Temperature Overview by Facility
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="facilityTempChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Fetch unit counts for facilities that don't have units count
+    const unitCountElements = document.querySelectorAll('.unit-count');
+    unitCountElements.forEach(async function(element) {
+        const facilityId = element.getAttribute('data-facility-id');
+        if (facilityId) {
+            try {
+                // Fetch facility details to get units
+                const response = await fetch(`/customer/api/facility_units/${facilityId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    element.textContent = data.units.length;
+                } else {
+                    element.textContent = "0";
+                }
+            } catch (error) {
+                console.error(`Error fetching unit count for facility ${facilityId}:`, error);
+                element.textContent = "0";
+            }
+        }
+    });
+    
+    // Facility Temperature Chart
+    const facilityTempCtx = document.getElementById('facilityTempChart');
+    if (facilityTempCtx && {{ facilities|length }}) {
+        // Extract facility names and generate random temperature data
+        // In a real app, this would come from your API
+        const labels = [];
+        const avgTemps = [];
+        const minTemps = [];
+        const maxTemps = [];
+        
+        {% for facility in facilities %}
+            labels.push("{{ facility.name or facility.facility_code }}");
+            
+            // Generate random temperature data (for demo)
+            // In a real app, this would be actual data from your API
+            const baseTemp = -3;
+            const avgTemp = baseTemp + (Math.random() * 2 - 1);
+            const minTemp = avgTemp - (Math.random() * 1.5 + 0.5);
+            const maxTemp = avgTemp + (Math.random() * 1.5 + 0.5);
+            
+            avgTemps.push(avgTemp);
+            minTemps.push(minTemp);
+            maxTemps.push(maxTemp);
+        {% endfor %}
+        
+        // Set min/max y-axis values
+        const minYValue = Math.min(...minTemps) - 5;
+        const maxYValue = Math.max(...maxTemps) + 5;
+        
+        // Create chart
+        new Chart(facilityTempCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Average Temperature',
+                        data: avgTemps,
+                        backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                        borderColor: 'rgba(54, 162, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Min Temperature',
+                        data: minTemps,
+                        backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Max Temperature',
+                        data: maxTemps,
+                        backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        min: minYValue,
+                        max: maxYValue,
+                        title: {
+                            display: true,
+                            text: 'Temperature (°C)'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Facility'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Temperature Comparison Across Facilities'
+                    },
+                    tooltip: {
+                        mode: 'index',
+                        intersect: false,
+                        callbacks: {
+                            label: function(context) {
+                                return context.dataset.label + ': ' + context.parsed.y.toFixed(1) + '°C';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

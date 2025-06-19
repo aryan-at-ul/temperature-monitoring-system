@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% block title %}System Health - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-3">
+    <div class="col-md-8">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h3 class="card-title mb-0">
+                    <i class="bi bi-heart-pulse"></i> System Health Status
+                </h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body text-center">
+                                <h5 class="card-title">API Status</h5>
+                                {% if api_status %}
+                                    <div class="status-indicator success mb-3">
+                                        <i class="bi bi-check-circle-fill display-1"></i>
+                                    </div>
+                                    <h4 class="text-success">Online</h4>
+                                    <p class="text-muted">Version: {{ api_version }}</p>
+                                {% else %}
+                                    <div class="status-indicator danger mb-3">
+                                        <i class="bi bi-x-circle-fill display-1"></i>
+                                    </div>
+                                    <h4 class="text-danger">Offline</h4>
+                                    <p class="text-muted">API service is currently unavailable</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title text-center">System Uptime</h5>
+                                {% if api_status %}
+                                    <div class="text-center mb-3">
+                                        <i class="bi bi-clock-history display-1"></i>
+                                    </div>
+                                    <div class="text-center">
+                                        {% if api_uptime < 60 %}
+                                            <h4>{{ api_uptime }} seconds</h4>
+                                        {% elif api_uptime < 3600 %}
+                                            <h4>{{ (api_uptime / 60)|int }} minutes, {{ api_uptime % 60 }} seconds</h4>
+                                        {% elif api_uptime < 86400 %}
+                                            <h4>{{ (api_uptime / 3600)|int }} hours, {{ ((api_uptime % 3600) / 60)|int }} minutes</h4>
+                                        {% else %}
+                                            <h4>{{ (api_uptime / 86400)|int }} days, {{ ((api_uptime % 86400) / 3600)|int }} hours</h4>
+                                        {% endif %}
+                                    </div>
+                                {% else %}
+                                    <div class="text-center text-muted">
+                                        <i class="bi bi-dash-circle display-1"></i>
+                                        <p class="mt-3">Uptime information unavailable</p>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-database display-6"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title">Database Status</h5>
+                                    {% if database_status == "ok" %}
+                                        <p class="card-text text-success mb-0">
+                                            <i class="bi bi-check-circle"></i> Connected and operational
+                                        </p>
+                                    {% else %}
+                                        <p class="card-text text-danger mb-0">
+                                            <i class="bi bi-x-circle"></i> Database connection issue
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-body d-flex align-items-center">
+                                <div class="me-3">
+                                    <i class="bi bi-envelope display-6"></i>
+                                </div>
+                                <div>
+                                    <h5 class="card-title">RabbitMQ Status</h5>
+                                    {% if rabbitmq_status == "ok" %}
+                                        <p class="card-text text-success mb-0">
+                                            <i class="bi bi-check-circle"></i> Message queue operational
+                                        </p>
+                                    {% else %}
+                                        <p class="card-text text-danger mb-0">
+                                            <i class="bi bi-x-circle"></i> Message queue issue
+                                        </p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mt-4">
+                    <h5>System Components</h5>
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            API Server
+                            {% if api_status %}
+                                <span class="badge bg-success rounded-pill">Operational</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill">Offline</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Database Service
+                            {% if database_status == "ok" %}
+                                <span class="badge bg-success rounded-pill">Operational</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill">Offline</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Message Queue
+                            {% if rabbitmq_status == "ok" %}
+                                <span class="badge bg-success rounded-pill">Operational</span>
+                            {% else %}
+                                <span class="badge bg-danger rounded-pill">Offline</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Data Ingestion Service
+                            {% if api_status and rabbitmq_status == "ok" %}
+                                <span class="badge bg-success rounded-pill">Operational</span>
+                            {% else %}
+                                <span class="badge bg-warning rounded-pill">Degraded</span>
+                            {% endif %}
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            Dashboard Web UI
+                            <span class="badge bg-success rounded-pill">Operational</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div class="card-footer text-center">
+                <button class="btn btn-primary" onclick="window.location.reload()">
+                    <i class="bi bi-arrow-clockwise"></i> Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .status-indicator {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+    }
+    
+    .status-indicator.success {
+        color: #198754;
+    }
+    
+    .status-indicator.danger {
+        color: #dc3545;
+    }
+    
+    .status-indicator.warning {
+        color: #ffc107;
+    }
+</style>
+{% endblock %}

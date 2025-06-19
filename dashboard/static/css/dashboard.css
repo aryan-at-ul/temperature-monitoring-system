@@ -1,108 +1,282 @@
 /* dashboard/static/css/dashboard.css */
-/* Global Styles */
-:root {
-    --primary-color: #0d6efd;
-    --secondary-color: #6c757d;
-    --success-color: #198754;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #0dcaf0;
-    --light-color: #f8f9fa;
-    --dark-color: #212529;
-}
 
-body {
-    min-height: 100vh;
+/* Dashboard specific styles */
+
+/* Dashboard cards */
+.dashboard-stats-card {
+    height: 100%;
+    text-align: center;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-.footer {
-    margin-top: auto;
+.dashboard-stats-card i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
 }
 
-/* Dashboard Cards */
-.card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-    margin-bottom: 1.5rem;
+.dashboard-stats-card h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
 }
 
-.card-header {
-    background-color: rgba(0, 0, 0, 0.03);
-    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
-    padding: 0.75rem 1rem;
+.dashboard-stats-card p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
 }
 
+/* Temperature indicators */
+.temp-indicator {
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.temp-normal {
+    color: #198754;
+}
+
+.temp-warning {
+    color: #ffc107;
+}
+
+.temp-danger {
+    color: #dc3545;
+}
+
+/* Chart containers */
 .chart-container {
     position: relative;
     height: 300px;
     width: 100%;
 }
 
-/* Temperature Status Indicators */
-.status-normal {
-    color: var(--success-color);
-}
-
-.status-warning {
-    color: var(--warning-color);
-}
-
-.status-critical {
-    color: var(--danger-color);
-}
-
-.status-offline {
-    color: var(--secondary-color);
-}
-
-/* Facility Cards */
+/* Facility cards */
 .facility-card {
-    transition: transform 0.2s;
-    cursor: pointer;
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1rem;
 }
 
 .facility-card:hover {
     transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* Alert Styling */
-.alert-item {
-    border-left: 4px solid var(--secondary-color);
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.75rem;
-    background-color: rgba(108, 117, 125, 0.1);
+.facility-card .card-img-top {
+    height: 150px;
+    object-fit: cover;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
 }
 
-.alert-item.warning {
-    border-left-color: var(--warning-color);
-    background-color: rgba(255, 193, 7, 0.1);
+/* Storage unit cards */
+.unit-card {
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    margin-bottom: 1rem;
+    overflow: hidden;
 }
 
-.alert-item.critical {
-    border-left-color: var(--danger-color);
-    background-color: rgba(220, 53, 69, 0.1);
+.unit-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
 }
 
-.alert-item.resolved {
-    opacity: 0.7;
+.unit-card .card-header {
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    font-weight: 600;
 }
 
-.alert-time {
-    font-size: 0.85rem;
-    color: var(--secondary-color);
+.unit-card .card-footer {
+    padding: 0.75rem 1.25rem;
+    background-color: rgba(0, 0, 0, 0.02);
 }
 
-/* Responsive Adjustments */
+/* Analytics page */
+.analytics-card {
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+}
+
+.analytics-card .card-header {
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+.analytics-card .card-body {
+    padding: 1.5rem;
+}
+
+/* Stats summary */
+.stats-summary {
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    height: 100%;
+}
+
+.stats-summary h4 {
+    color: #0d6efd;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+}
+
+.stats-summary .list-group-item {
+    border: none;
+    background-color: transparent;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.stats-summary .list-group-item:last-child {
+    border-bottom: none;
+}
+
+/* ML Features section */
+.ml-feature-card {
+    border-radius: 10px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.ml-feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.ml-feature-card .card-header {
+    background-color: #0dcaf0;
+    color: white;
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+.ml-feature-card .card-body {
+    padding: 1.5rem;
+}
+
+.ml-feature-card .card-footer {
+    background-color: white;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem 1.25rem;
+}
+
+/* Heat maps */
+.heatmap-container {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background-color: #f8f9fa;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+/* Date range selector */
+.date-range-selector {
+    background-color: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Status indicators */
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 5px;
+}
+
+.status-indicator.normal {
+    background-color: #198754;
+}
+
+.status-indicator.warning {
+    background-color: #ffc107;
+}
+
+.status-indicator.error {
+    background-color: #dc3545;
+}
+
+/* Temperature badges */
+.temp-badge {
+    font-size: 1.1rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 5px;
+}
+
+/* Admin specific styles */
+.admin-dashboard .card {
+    margin-bottom: 1.5rem;
+}
+
+.admin-dashboard .card-header {
+    font-weight: 600;
+    padding: 1rem 1.25rem;
+}
+
+.admin-dashboard .overview-card {
+    height: 100%;
+    text-align: center;
+    padding: 1.5rem;
+}
+
+.admin-dashboard .overview-card i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.admin-dashboard .overview-card h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+/* Customer management */
+.customer-table th, .customer-table td {
+    vertical-align: middle;
+}
+
+/* Facility management */
+.facility-table th, .facility-table td {
+    vertical-align: middle;
+}
+
+/* System config */
+.config-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.config-form label {
+    font-weight: 600;
+}
+
+/* Responsive dashboard cards */
 @media (max-width: 768px) {
-    .card-header {
-        flex-direction: column;
-        align-items: start !important;
+    .dashboard-stats-card i {
+        font-size: 2rem;
     }
     
-    .card-header .d-flex > * {
-        margin-top: 0.5rem;
+    .dashboard-stats-card h2 {
+        font-size: 1.75rem;
+    }
+    
+    .overview-card i {
+        font-size: 2rem;
+    }
+    
+    .overview-card h2 {
+        font-size: 1.75rem;
     }
     
     .chart-container {

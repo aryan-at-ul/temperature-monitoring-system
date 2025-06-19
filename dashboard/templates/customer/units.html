@@ -1,0 +1,281 @@
+{% extends "base.html" %}
+
+{% block title %}Storage Units - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="mb-3">
+                    <i class="bi bi-box"></i> 
+                    Storage Units
+                </h1>
+                <p class="lead">
+                    View and manage all your storage units across different facilities.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Units List -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-list"></i> All Storage Units
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-secondary me-2" id="exportUnitsBtn">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if units %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Unit Code</th>
+                                    <th>Name</th>
+                                    <th>Facility</th>
+                                    <th>Size</th>
+                                    <th>Set Temperature</th>
+                                    <th>Current Temperature</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for unit in units %}
+                                    <tr>
+                                        <td>{{ unit.unit_code }}</td>
+                                        <td>{{ unit.name or '-' }}</td>
+                                        <td>{{ unit.facility_name }}</td>
+                                        <td>
+                                            {% if unit.size_value %}
+                                                {{ unit.size_value }} {{ unit.size_unit }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if unit.set_temperature %}
+                                                {{ "%.1f"|format(unit.set_temperature) }}°{{ unit.temperature_unit }}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if unit.current_temperature %}
+                                                <span class="
+                                                    {% if unit.temperature_status == 'normal' %}
+                                                        text-success
+                                                    {% elif unit.temperature_status == 'warning' %}
+                                                        text-warning
+                                                    {% else %}
+                                                        text-danger
+                                                    {% endif %}
+                                                ">
+                                                    {{ "%.1f"|format(unit.current_temperature) }}°{{ unit.current_temperature_unit }}
+                                                </span>
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if unit.temperature_status == 'normal' %}
+                                                <span class="badge bg-success">Normal</span>
+                                            {% elif unit.temperature_status == 'warning' %}
+                                                <span class="badge bg-warning text-dark">Warning</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">{{ unit.temperature_status }}</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{{ url_for('customer.unit_details', unit_id=unit.id) }}" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="bi bi-eye"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No storage units available.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Overview -->
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-thermometer"></i> Temperature Overview
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-lg-8">
+                        <canvas id="temperatureDistributionChart" height="300"></canvas>
+                    </div>
+                    <div class="col-lg-4">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <h6 class="card-title mb-0">Temperature Status</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="list-group">
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-thermometer-low text-success"></i> 
+                                            Normal Units
+                                        </div>
+                                        <span class="badge bg-success rounded-pill" id="normalCount">
+                                            {{ units|selectattr('temperature_status', 'equalto', 'normal')|list|length }}
+                                        </span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-thermometer-half text-warning"></i> 
+                                            Warning Units
+                                        </div>
+                                        <span class="badge bg-warning text-dark rounded-pill" id="warningCount">
+                                            {{ units|selectattr('temperature_status', 'equalto', 'warning')|list|length }}
+                                        </span>
+                                    </div>
+                                    <div class="list-group-item d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <i class="bi bi-thermometer-high text-danger"></i> 
+                                            Error Units
+                                        </div>
+                                        <span class="badge bg-danger rounded-pill" id="errorCount">
+                                            {{ units|selectattr('temperature_status', 'ne', 'normal')|selectattr('temperature_status', 'ne', 'warning')|list|length }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Export units to CSV
+    document.getElementById('exportUnitsBtn').addEventListener('click', function() {
+        // In a real app, this would make an API call to download the CSV
+        alert('Export functionality would be implemented here');
+    });
+    
+    // Temperature distribution chart
+    const tempDistCtx = document.getElementById('temperatureDistributionChart');
+    if (tempDistCtx) {
+        // Prepare data for chart - group units by temperature ranges
+        const labels = [];
+        const data = [];
+        const colors = [];
+        
+        // Define temperature ranges
+        const ranges = [
+            { min: -30, max: -25, label: '-30°C to -25°C', color: 'rgba(0, 63, 92, 0.7)' },
+            { min: -25, max: -20, label: '-25°C to -20°C', color: 'rgba(47, 75, 124, 0.7)' },
+            { min: -20, max: -15, label: '-20°C to -15°C', color: 'rgba(102, 81, 145, 0.7)' },
+            { min: -15, max: -10, label: '-15°C to -10°C', color: 'rgba(160, 81, 149, 0.7)' },
+            { min: -10, max: -5, label: '-10°C to -5°C', color: 'rgba(212, 80, 135, 0.7)' },
+            { min: -5, max: 0, label: '-5°C to 0°C', color: 'rgba(249, 93, 106, 0.7)' },
+            { min: 0, max: 5, label: '0°C to 5°C', color: 'rgba(255, 124, 67, 0.7)' },
+            { min: 5, max: 10, label: '5°C to 10°C', color: 'rgba(255, 166, 0, 0.7)' }
+        ];
+        
+        // Count units in each range
+        ranges.forEach(range => {
+            labels.push(range.label);
+            colors.push(range.color);
+            
+            // Count units in this range
+            let count = 0;
+            {% for unit in units %}
+                {% if unit.current_temperature %}
+                    const temp = {{ unit.current_temperature }};
+                    if (temp >= range.min && temp < range.max) {
+                        count++;
+                    }
+                {% endif %}
+            {% endfor %}
+            
+            data.push(count);
+        });
+        
+        // Create chart
+        new Chart(tempDistCtx, {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Number of Units',
+                    data: data,
+                    backgroundColor: colors,
+                    borderColor: colors.map(color => color.replace('0.7', '1')),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Units'
+                        },
+                        ticks: {
+                            precision: 0
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Temperature Range'
+                        }
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Distribution of Current Temperatures'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                return tooltipItems[0].label;
+                            },
+                            label: function(context) {
+                                return `${context.raw} unit${context.raw !== 1 ? 's' : ''}`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

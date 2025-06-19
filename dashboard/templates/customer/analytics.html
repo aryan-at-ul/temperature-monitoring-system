@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics - Temperature Monitoring System{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h1 class="mb-3">
+                    <i class="bi bi-graph-up"></i> 
+                    Temperature Analytics
+                </h1>
+                <p class="lead">
+                    Detailed analysis and insights from your temperature monitoring data.
+                </p>
+                
+                <!-- Date Range Selector -->
+                <div class="row mt-4">
+                    <div class="col-md-6 offset-md-3">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="dateRangeForm" class="row g-3">
+                                    <div class="col-md-5">
+                                        <label for="startDate" class="form-label">Start Date</label>
+                                        <input type="date" class="form-control" id="startDate" name="startDate">
+                                    </div>
+                                    <div class="col-md-5">
+                                        <label for="endDate" class="form-label">End Date</label>
+                                        <input type="date" class="form-control" id="endDate" name="endDate">
+                                    </div>
+                                    <div class="col-md-2 d-flex align-items-end">
+                                        <button type="submit" class="btn btn-primary w-100">
+                                            <i class="bi bi-search"></i> Apply
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Overview Cards -->
+<div class="row mb-4">
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-primary text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-thermometer-half display-1 mb-3"></i>
+                <h5 class="card-title">Average Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_summary.avg_temperature) }}°{{ temp_summary.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-success text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-arrow-down-circle display-1 mb-3"></i>
+                <h5 class="card-title">Minimum Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_summary.min_temperature) }}°{{ temp_summary.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-danger text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-arrow-up-circle display-1 mb-3"></i>
+                <h5 class="card-title">Maximum Temperature</h5>
+                <h2 class="card-text">
+                    {{ "%.1f"|format(temp_summary.max_temperature) }}°{{ temp_summary.temperature_unit }}
+                </h2>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-3 col-md-6 mb-3">
+        <div class="card bg-info text-white h-100">
+            <div class="card-body d-flex flex-column align-items-center justify-content-center">
+                <i class="bi bi-check-circle display-1 mb-3"></i>
+                <h5 class="card-title">Reading Quality</h5>
+                <h2 class="card-text">
+                    {{ (temp_summary.normal_count / temp_summary.reading_count * 100)|int }}%
+                </h2>
+                <p>{{ temp_summary.normal_count }} of {{ temp_summary.reading_count }} readings</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Temperature Trends Chart -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-graph-up"></i> Temperature Trends Over Time
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="temperatureTrendsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Facility Comparison and Status Distribution -->
+<div class="row mb-4">
+    <div class="col-md-7">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-building"></i> Facility Temperature Comparison
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="facilityComparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-5">
+        <div class="card shadow-sm h-100">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-pie-chart"></i> Equipment Status Distribution
+                </h5>
+            </div>
+            <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                    <canvas id="statusDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Performance Metrics -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-speedometer2"></i> Performance Metrics
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">System Uptime</h5>
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div class="progress-bar bg-success" role="progressbar" 
+                                         style="width: {{ performance.uptime.uptime_percentage }}%;" 
+                                         aria-valuenow="{{ performance.uptime.uptime_percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ performance.uptime.uptime_percentage }}%
+                                    </div>
+                                </div>
+                                <p class="card-text">
+                                    {{ performance.uptime.hours_with_readings }} of {{ performance.uptime.total_hours }} hours with readings
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Data Quality</h5>
+                                <div class="progress mb-3" style="height: 25px;">
+                                    <div class="progress-bar bg-primary" role="progressbar" 
+                                         style="width: {{ performance.data_quality.quality_percentage }}%;" 
+                                         aria-valuenow="{{ performance.data_quality.quality_percentage }}" 
+                                         aria-valuemin="0" aria-valuemax="100">
+                                        {{ performance.data_quality.quality_percentage }}%
+                                    </div>
+                                </div>
+                                <p class="card-text">
+                                    {{ performance.data_quality.good_readings }} of {{ performance.data_quality.total_readings }} good quality readings
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">Temperature Deviation</h5>
+                                <table class="table table-sm">
+                                    <tbody>
+                                        <tr>
+                                            <td>Average Deviation</td>
+                                            <td class="text-end">{{ performance.temperature_deviation.avg_deviation }}°{{ temp_summary.temperature_unit }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Maximum Deviation</td>
+                                            <td class="text-end">{{ performance.temperature_deviation.max_deviation }}°{{ temp_summary.temperature_unit }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td>Minimum Deviation</td>
+                                            <td class="text-end">{{ performance.temperature_deviation.min_deviation }}°{{ temp_summary.temperature_unit }}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Equipment Status Table -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <h5>Equipment Status Distribution</h5>
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Status</th>
+                                        <th>Count</th>
+                                        <th>Percentage</th>
+                                        <th>Distribution</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for status in performance.status_distribution %}
+                                        <tr>
+                                            <td>
+                                                {% if status.equipment_status == "normal" %}
+                                                    <span class="badge bg-success">Normal</span>
+                                                {% elif status.equipment_status == "warning" %}
+                                                    <span class="badge bg-warning text-dark">Warning</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ status.equipment_status }}</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ status.count }}</td>
+                                            <td>{{ status.percentage }}%</td>
+                                            <td>
+                                                <div class="progress" style="height: 20px;">
+                                                    <div class="progress-bar 
+                                                        {% if status.equipment_status == 'normal' %}
+                                                            bg-success
+                                                        {% elif status.equipment_status == 'warning' %}
+                                                            bg-warning
+                                                        {% else %}
+                                                            bg-danger
+                                                        {% endif %}" 
+                                                         role="progressbar" 
+                                                         style="width: {{ status.percentage }}%;" 
+                                                         aria-valuenow="{{ status.percentage }}" 
+                                                         aria-valuemin="0" aria-valuemax="100">
+                                                        {{ status.percentage }}%
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Alarm History -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="bi bi-exclamation-triangle"></i> Alarm History
+                </h5>
+                <div>
+                    <button class="btn btn-sm btn-outline-primary" id="exportAlarmsCsv">
+                        <i class="bi bi-download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if alarms %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Facility</th>
+                                    <th>Storage Unit</th>
+                                    <th>Alarm Type</th>
+                                    <th>Severity</th>
+                                    <th>Temperature</th>
+                                    <th>Timestamp</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for alarm in alarms %}
+                                    <tr>
+                                        <td>{{ alarm.facility_name }}</td>
+                                        <td>{{ alarm.unit_name }}</td>
+                                        <td>{{ alarm.alarm_type }}</td>
+                                        <td>
+                                            {% if alarm.severity == "low" %}
+                                                <span class="badge bg-info">Low</span>
+                                            {% elif alarm.severity == "medium" %}
+                                                <span class="badge bg-warning text-dark">Medium</span>
+                                            {% else %}
+                                                <span class="badge bg-danger">High</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ alarm.temperature }}°{{ alarm.temperature_unit }}</td>
+                                        <td>{{ alarm.created_at }}</td>
+                                        <td>
+                                            {% if alarm.is_active %}
+                                                <span class="badge bg-danger">Active</span>
+                                            {% else %}
+                                                <span class="badge bg-success">Resolved</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i> No alarm records found in the selected time period.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default date range (past 7 days)
+    const today = new Date();
+    const weekAgo = new Date(today);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    document.getElementById('startDate').valueAsDate = weekAgo;
+    document.getElementById('endDate').valueAsDate = today;
+    
+    // Get min/max temp values for Y-axis scaling
+    {% if temp_summary %}
+        const minTemp = {{ temp_summary.min_temperature }} - 10;
+        const maxTemp = {{ temp_summary.max_temperature }} + 10;
+    {% else %}
+        const minTemp = -30;
+        const maxTemp = 10;
+    {% endif %}
+    
+    // Temperature Trends Chart
+    const trendsCtx = document.getElementById('temperatureTrendsChart').getContext('2d');
+    
+    // Sample data for trends - in a real app, this would come from the API
+    const trendsLabels = [];
+    {% for trend in trends %}
+        trendsLabels.push('{{ trend.group_key.day|replace("T23:00:00Z", "") }}');
+    {% endfor %}
+    
+    const avgTempData = [];
+    const minTempData = [];
+    const maxTempData = [];
+    
+    {% for trend in trends %}
+        avgTempData.push({{ trend.metrics.avg_temperature }});
+        minTempData.push({{ trend.metrics.min_temperature }});
+        maxTempData.push({{ trend.metrics.max_temperature }});
+    {% endfor %}
+    
+    const trendsData = {
+        labels: trendsLabels,
+        datasets: [
+            {
+                label: 'Average Temperature',
+                data: avgTempData,
+                borderColor: 'rgba(54, 162, 235, 1)',
+                backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.3
+            },
+            {
+                label: 'Min Temperature',
+                data: minTempData,
+                borderColor: 'rgba(40, 167, 69, 1)',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.2
+            },
+            {
+                label: 'Max Temperature',
+                data: maxTempData,
+                borderColor: 'rgba(220, 53, 69, 1)',
+                backgroundColor: 'rgba(220, 53, 69, 0.1)',
+                borderWidth: 2,
+                fill: false,
+                tension: 0.2
+            }
+        ]
+    };
+    
+    // Configuration options for temperature trends
+    const trendsConfig = {
+        type: 'line',
+        data: trendsData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: minTemp,
+                    max: maxTemp,
+                    title: {
+                        display: true,
+                        text: 'Temperature (°{{ temp_summary.temperature_unit }})'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Date'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Temperature Trends Over Time'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + '°{{ temp_summary.temperature_unit }}';
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Create the trends chart
+    new Chart(trendsCtx, trendsConfig);
+    
+    // Facility Comparison Chart
+    const facilityCtx = document.getElementById('facilityComparisonChart').getContext('2d');
+    
+    // Sample data for facility comparison - in a real app, this would come from the API
+    const facilityLabels = [];
+    const facilityAvgTemp = [];
+    const facilityMinTemp = [];
+    const facilityMaxTemp = [];
+    
+    {% for trend in facility_trends %}
+        facilityLabels.push('{{ trend.group_key.facility_name or trend.group_key.facility_id }}');
+        facilityAvgTemp.push({{ trend.metrics.avg_temperature }});
+        facilityMinTemp.push({{ trend.metrics.min_temperature }});
+        facilityMaxTemp.push({{ trend.metrics.max_temperature }});
+    {% endfor %}
+    
+    const facilityData = {
+        labels: facilityLabels,
+        datasets: [
+            {
+                label: 'Average Temperature',
+                data: facilityAvgTemp,
+                backgroundColor: 'rgba(54, 162, 235, 0.7)',
+                borderColor: 'rgba(54, 162, 235, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Min Temperature',
+                data: facilityMinTemp,
+                backgroundColor: 'rgba(40, 167, 69, 0.7)',
+                borderColor: 'rgba(40, 167, 69, 1)',
+                borderWidth: 1
+            },
+            {
+                label: 'Max Temperature',
+                data: facilityMaxTemp,
+                backgroundColor: 'rgba(220, 53, 69, 0.7)',
+                borderColor: 'rgba(220, 53, 69, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+    
+    // Configuration options for facility comparison
+    const facilityConfig = {
+        type: 'bar',
+        data: facilityData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    min: minTemp,
+                    max: maxTemp,
+                    title: {
+                        display: true,
+                        text: 'Temperature (°{{ temp_summary.temperature_unit }})'
+                    }
+                },
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Facility'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Temperature by Facility'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return context.dataset.label + ': ' + context.parsed.y + '°{{ temp_summary.temperature_unit }}';
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Create the facility comparison chart
+    new Chart(facilityCtx, facilityConfig);
+    
+    // Status Distribution Chart
+    const statusCtx = document.getElementById('statusDistributionChart').getContext('2d');
+    
+    // Get status data from the performance metrics
+    const statusLabels = [];
+    const statusCounts = [];
+    const statusColors = [];
+    
+    {% for status in performance.status_distribution %}
+        statusLabels.push('{{ status.equipment_status|capitalize }}');
+        statusCounts.push({{ status.count }});
+        
+        {% if status.equipment_status == 'normal' %}
+            statusColors.push('rgba(40, 167, 69, 0.8)');
+        {% elif status.equipment_status == 'warning' %}
+            statusColors.push('rgba(255, 193, 7, 0.8)');
+        {% else %}
+            statusColors.push('rgba(220, 53, 69, 0.8)');
+        {% endif %}
+    {% endfor %}
+    
+    const statusData = {
+        labels: statusLabels,
+        datasets: [{
+            data: statusCounts,
+            backgroundColor: statusColors,
+            borderColor: statusColors.map(color => color.replace('0.8', '1')),
+            borderWidth: 1
+        }]
+    };
+    
+    // Configuration options for status distribution
+    const statusConfig = {
+        type: 'pie',
+        data: statusData,
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Equipment Status Distribution'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.parsed || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            }
+        }
+    };
+    
+    // Create the status distribution chart
+    new Chart(statusCtx, statusConfig);
+    
+    // Date range form submission
+    document.getElementById('dateRangeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const startDate = document.getElementById('startDate').value;
+        const endDate = document.getElementById('endDate').value;
+        
+        // Redirect to the same page with date parameters
+        window.location.href = `${window.location.pathname}?start_date=${startDate}&end_date=${endDate}`;
+    });
+    
+    // Export alarms to CSV
+    document.getElementById('exportAlarmsCsv')?.addEventListener('click', function() {
+        // In a real app, this would call an API endpoint to download CSV
+        alert('CSV export functionality would be implemented here.');
+    });
+});
+</script>
+{% endblock %}
