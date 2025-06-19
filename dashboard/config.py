@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
-
+# dashboard/config.py
 
 import os
 from datetime import timedelta
 
-
+# Base configuration class
 class Config:
     # Flask configuration
-    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev_secret_key_change_in_production') #if using db dump pick one from api token json file, read and write
+    SECRET_KEY = os.environ.get('SECRET_KEY', 'dev_secret_key_change_in_production')
     PERMANENT_SESSION_LIFETIME = timedelta(hours=8)
     
     # API configuration

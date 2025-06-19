@@ -5,7 +5,7 @@ import os
 
 common_bp = Blueprint('common', __name__)
 
-
+# API Configuration
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:8000/api/v1')
 HEALTH_URL = os.environ.get('HEALTH_URL', 'http://localhost:8000/health')
 

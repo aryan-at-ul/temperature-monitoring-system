@@ -37,19 +37,26 @@ def index():
             return redirect(url_for('customer.dashboard'))
     return redirect(url_for('login'))
 
+# Replace your existing login route in app.py
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         customer_code = request.form.get('customer_code')
         token_type = request.form.get('token_type', 'read')
         
-      
+        # Add debug logging
+        print(f"Login attempt: customer_code={customer_code}, token_type={token_type}")
+        
+        # Check if admin login
         if customer_code == 'admin':
             admin_token = request.form.get('token')
             # Test the admin token
             headers = {"Authorization": f"Bearer {admin_token}"}
             try:
+                print(f"Testing admin token: {admin_token[:5]}...")
                 response = requests.get(f"{API_BASE_URL}/admin/customers", headers=headers)
+                print(f"Admin API response: {response.status_code}")
                 if response.status_code == 200:
                     session['token'] = admin_token
                     session['role'] = 'admin'
@@ -58,15 +65,19 @@ def login():
                     return redirect(url_for('admin.dashboard'))
                 else:
                     flash('Invalid admin token', 'danger')
-            except requests.exceptions.RequestException:
+            except requests.exceptions.RequestException as e:
+                print(f"API request error: {str(e)}")
                 flash('API service unavailable', 'danger')
         else:
-           
+            # Customer login
             token = request.form.get('token')
-           
+            
             headers = {"Authorization": f"Bearer {token}"}
             try:
-                response = requests.get(f"{API_BASE_URL}/customers/profile", headers=headers)
+                print(f"Testing customer token with facilities endpoint: {token[:5]}...")
+                response = requests.get(f"{API_BASE_URL}/facilities", headers=headers)
+                print(f"Customer API facilities response: {response.status_code}")
+                
                 if response.status_code == 200:
                     session['token'] = token
                     session['role'] = 'customer'
@@ -74,11 +85,23 @@ def login():
                     flash('Login successful', 'success')
                     return redirect(url_for('customer.dashboard'))
                 else:
-                    flash('Invalid token', 'danger')
-            except requests.exceptions.RequestException:
+                    # Try temperature endpoint as a fallback
+                    response = requests.get(f"{API_BASE_URL}/temperature/latest", headers=headers)
+                    print(f"Temperature API response: {response.status_code}")
+                    
+                    if response.status_code == 200:
+                        session['token'] = token
+                        session['role'] = 'customer'
+                        session['customer_code'] = customer_code
+                        flash('Login successful', 'success')
+                        return redirect(url_for('customer.dashboard'))
+                    else:
+                        flash('Invalid token', 'danger')
+            except requests.exceptions.RequestException as e:
+                print(f"API request error: {str(e)}")
                 flash('API service unavailable', 'danger')
     
-
+    # Check API health before showing login page
     try:
         health_response = requests.get(HEALTH_URL)
         api_status = health_response.json().get('status') == 'ok'
@@ -125,6 +148,52 @@ def utility_processor():
         return 'Guest'
     
     return dict(api_url=api_url, customer_name=customer_name)
+
+@app.template_filter('datetime')
+def format_datetime(value, format='%Y-%m-%d %H:%M:%S'):
+    """Format a datetime object or ISO timestamp string to a readable format."""
+    if value is None:
+        return ""
+    
+    # If value is already a datetime object
+    if isinstance(value, datetime):
+        return value.strftime(format)
+    
+    # If value is a string, try to parse it
+    try:
+        # Handle ISO format with timezone
+        if isinstance(value, str):
+            # Remove any timezone part for simpler parsing
+            if 'T' in value:
+                # ISO format with 'T' separator
+                parts = value.split('.')
+                if len(parts) > 1:
+                    # Has milliseconds
+                    dt_str = parts[0]
+                else:
+                    # No milliseconds
+                    if '+' in value:
+                        dt_str = value.split('+')[0]
+                    elif 'Z' in value:
+                        dt_str = value.replace('Z', '')
+                    else:
+                        dt_str = value
+                
+                # Parse the datetime
+                dt = datetime.fromisoformat(dt_str.replace('Z', ''))
+            else:
+                # Simple format without 'T'
+                dt = datetime.fromisoformat(value)
+            
+            return dt.strftime(format)
+    except (ValueError, TypeError):
+        # If parsing fails, return the original value
+        return value
+    
+    # If all else fails, return the original value
+    return value
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

@@ -5,6 +5,7 @@ import json
 import datetime
 from functools import wraps
 
+
 from utils import make_api_request, login_required
 
 customer_bp = Blueprint('customer', __name__)
@@ -15,55 +16,87 @@ customer_bp = Blueprint('customer', __name__)
 def dashboard():
     """Customer dashboard home page"""
     try:
-        # Get customer profile
-        customer_profile = make_api_request('/customers/profile')
+        # Create a basic profile from session data
+        customer_profile = {
+            'customer_code': session.get('customer_code', 'Unknown'),
+            'name': session.get('customer_code', 'Customer'),
+            'is_active': True
+        }
         
         # Get latest temperature readings
-        latest_readings = make_api_request('/temperature/latest')
+        latest_readings = []
+        try:
+            latest_response = make_api_request('/temperature/latest')
+            if isinstance(latest_response, tuple):
+                # Error response
+                print(f"Error fetching latest readings: {latest_response}")
+            else:
+                # API returns a list directly for this endpoint
+                if isinstance(latest_response, list):
+                    latest_readings = latest_response
+                else:
+                    # Or it might return an object with an items field
+                    latest_readings = latest_response.get('items', [])
+        except Exception as e:
+            print(f"Exception fetching latest readings: {str(e)}")
         
         # Get temperature statistics
-        temp_stats = make_api_request('/temperature/stats')
+        temp_stats = {}
+        try:
+            temp_stats = make_api_request('/temperature/stats')
+            if isinstance(temp_stats, tuple):
+                print(f"Error fetching temperature stats: {temp_stats}")
+                temp_stats = {}
+        except Exception as e:
+            print(f"Exception fetching temperature stats: {str(e)}")
         
         # Get facilities for this customer
-        facilities = make_api_request('/facilities')
+        facilities = []
+        try:
+            facilities_data = make_api_request('/facilities')
+            if isinstance(facilities_data, tuple):
+                print(f"Error fetching facilities: {facilities_data}")
+            else:
+                facilities = facilities_data.get('items', [])
+        except Exception as e:
+            print(f"Exception fetching facilities: {str(e)}")
+        
+        # Add some debugging
+        print(f"Customer dashboard data - Profile: {customer_profile}")
+        print(f"Latest readings count: {len(latest_readings)}")
+        print(f"Temp stats: {temp_stats}")
+        print(f"Facilities count: {len(facilities)}")
         
         return render_template(
             'customer/dashboard.html',
             profile=customer_profile,
             latest_readings=latest_readings,
             temp_stats=temp_stats,
-            facilities=facilities.get('items', [])
+            facilities=facilities
         )
     except Exception as e:
-        # Log the error
-        import logging
-        logging.error(f"Error in dashboard route: {e}")
-        # Return a template with error handling but with empty variables
+        flash(f"Error loading dashboard data: {str(e)}", "danger")
         return render_template(
-            'customer/dashboard.html', 
-            error=f"Error loading dashboard data: {str(e)}",
-            profile={},
+            'customer/dashboard.html',
+            profile=customer_profile,
             latest_readings=[],
             temp_stats={},
             facilities=[]
         )
-
-
-
 
 @customer_bp.route('/facilities')
 @login_required
 def facilities():
     """Customer facilities page"""
     try:
-    
+        # Get all facilities for this customer
         facilities_data = make_api_request('/facilities')
         
-       
+        # For each facility, get unit count
         facilities_with_units = []
         for facility in facilities_data.get('items', []):
             try:
-                
+                # Get units for this facility
                 units_data = make_api_request(f'/facilities/{facility["id"]}/units')
                 facility['unit_count'] = len(units_data.get('items', []))
             except Exception:
@@ -84,17 +117,17 @@ def facilities():
 def facility_details(facility_id):
     """Detailed view of a single facility"""
     try:
-      
+        # Get facility with all units
         facility = make_api_request(f'/facilities/{facility_id}/detailed')
         
-      
+        # Get recent temperature readings for this facility
         readings = make_api_request(f'/temperature/facility/{facility_id}')
         
-      
+        # In case the 'units' field is not present, initialize it
         if 'units' not in facility:
             facility['units'] = []
             
-          
+            # Try to get units separately
             try:
                 units_data = make_api_request(f'/facilities/{facility_id}/units')
                 facility['units'] = units_data.get('items', [])
@@ -131,13 +164,13 @@ def units():
 def unit_details(unit_id):
     """Detailed view of a single storage unit"""
     try:
-      
+        # Get unit details
         unit = make_api_request(f'/units/{unit_id}')
         
-    
+        # Get temperature readings for this unit
         readings = make_api_request(f'/temperature/unit/{unit_id}')
         
-
+        # Get facility info
         facility_id = unit.get('facility_id')
         facility = make_api_request(f'/facilities/{facility_id}')
         
@@ -156,16 +189,16 @@ def unit_details(unit_id):
 def analytics():
     """Customer analytics page"""
     try:
-   
+        # Get temperature summary
         temp_summary = make_api_request('/analytics/temperature/summary')
         
-
+        # Get performance metrics
         performance = make_api_request('/analytics/performance')
         
-    
+        # Get alarm history
         alarms = make_api_request('/analytics/alarms/history')
         
-  
+        # Get temperature trends for the past 7 days
         end_date = datetime.datetime.now().isoformat()
         start_date = (datetime.datetime.now() - datetime.timedelta(days=7)).isoformat()
         
@@ -174,7 +207,7 @@ def analytics():
             params={'interval': 'day', 'start_date': start_date, 'end_date': end_date}
         )
         
-
+        # Get temperature aggregation by facility
         aggregation_data = {
             'group_by': ['day', 'facility'],
             'aggregations': ['avg', 'min', 'max', 'count'],
@@ -205,10 +238,10 @@ def analytics():
 def settings():
     """Customer settings page"""
     try:
-   
+        # Get customer profile
         profile = make_api_request('/customers/profile')
         
-    
+        # Get customer tokens
         tokens = make_api_request('/customers/tokens')
         
         return render_template(
@@ -226,16 +259,16 @@ def ml():
     """Machine Learning dashboard (placeholder for future)"""
     return render_template('customer/ml.html')
 
-
+# API endpoints for AJAX requests
 @customer_bp.route('/api/temperature_history/<unit_id>')
 @login_required
 def temperature_history(unit_id):
     """Get temperature history for a unit in JSON format for charts"""
     try:
-        
+        # Get temperature readings for this unit
         readings = make_api_request(f'/temperature/unit/{unit_id}')
         
-        
+        # Format data for charts
         data = []
         for reading in readings.get('items', []):
             data.append({
@@ -253,11 +286,11 @@ def temperature_history(unit_id):
 def facility_stats(facility_id):
     """Get aggregated stats for a facility in JSON format for charts"""
     try:
-      
+        # Get current date and 30 days ago
         end_date = datetime.datetime.now().isoformat()
         start_date = (datetime.datetime.now() - datetime.timedelta(days=30)).isoformat()
         
-       
+        # Set up aggregation
         aggregation_data = {
             'group_by': ['day'],
             'aggregations': ['avg', 'min', 'max', 'count'],
@@ -266,7 +299,7 @@ def facility_stats(facility_id):
             'facility_id': facility_id
         }
         
- 
+        # Get aggregated data
         stats = make_api_request(
             '/temperature/aggregate',
             method="POST",
@@ -282,10 +315,10 @@ def facility_stats(facility_id):
 def facility_units(facility_id):
     """Get units for a facility in JSON format"""
     try:
-        
+        # Get units for this facility
         units_data = make_api_request(f'/facilities/{facility_id}/units')
         
-       
+        # Return units data
         return jsonify({
             "facility_id": facility_id,
             "units": units_data.get('items', [])
