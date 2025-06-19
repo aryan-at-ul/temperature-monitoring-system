@@ -1,679 +1,237 @@
--- -- database/schema.sql
--- -- Temperature Monitoring System Database Schema
--- -- Designed to handle diverse customer data with different units and null values
+-- =============================================================================
+-- Temperature Monitoring System - Database Initialization Script
+-- =============================================================================
+-- This script will:
+-- 1. Create a dedicated user and database.
+-- 2. Define the schema for all tables, including relationships.
+-- 3. Set up automated monthly partitioning for temperature readings.
+-- 4. Create helpful views for data analysis.
+-- 5. Grant appropriate permissions to the application user.
+-- 6. Seed the database with essential starting data.
+-- =============================================================================
 
--- -- Extension for UUID generation
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- ==> IMPORTANT: Run the following section as a superuser (e.g., 'postgres')
+-- You might need to connect to the default 'postgres' database to run this part.
 
--- -- ================================
--- -- CUSTOMER MANAGEMENT TABLES
--- -- ================================
+-- -- 1. User and Database Creation --
+-- CREATE ROLE tm_user WITH LOGIN PASSWORD 'a_strong_password_here';
+-- CREATE DATABASE temperature_db WITH OWNER tm_user;
+-- COMMENT ON DATABASE temperature_db IS 'Database for the Temperature Monitoring System';
 
--- -- Customers table
--- CREATE TABLE customers (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     customer_code VARCHAR(10) UNIQUE NOT NULL, -- 'A', 'B', etc.
---     name VARCHAR(255) NOT NULL,
---     data_sharing_method VARCHAR(20) NOT NULL CHECK (data_sharing_method IN ('csv', 'api', 'webhook')),
---     data_frequency_seconds INTEGER DEFAULT 300,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     is_active BOOLEAN DEFAULT TRUE
--- );
+-- ==> IMPORTANT: Now, connect to the 'temperature_db' as the 'postgres' user
+-- to run the rest of this script. (\c temperature_db)
 
--- -- Facilities table  
--- CREATE TABLE facilities (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
---     facility_code VARCHAR(50) NOT NULL, -- For customer reference
---     name VARCHAR(255), -- Can be NULL
---     city VARCHAR(100), -- Can be NULL  
---     country VARCHAR(100) NOT NULL,
---     latitude DECIMAL(10, 8), -- For future geographic features
---     longitude DECIMAL(11, 8),
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     UNIQUE(customer_id, facility_code)
--- );
+BEGIN;
 
--- -- Storage units table
--- CREATE TABLE storage_units (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     facility_id UUID NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
---     unit_code VARCHAR(50) NOT NULL, -- For customer reference
---     name VARCHAR(255), -- Can be NULL (like Customer A)
---     size_value DECIMAL(12, 2) NOT NULL,
---     size_unit VARCHAR(10) NOT NULL CHECK (size_unit IN ('sqm', 'sqft', 'm2', 'ft2')),
---     set_temperature DECIMAL(8, 2) NOT NULL,
---     temperature_unit VARCHAR(5) NOT NULL CHECK (temperature_unit IN ('C', 'F', 'K')),
---     equipment_type VARCHAR(50) DEFAULT 'freezer',
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     UNIQUE(facility_id, unit_code)
--- );
-
--- -- ================================
--- -- TIME SERIES DATA TABLES  
--- -- ================================
-
--- -- Main temperature readings table (hot data - recent readings)
--- CREATE TABLE temperature_readings (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     customer_id UUID NOT NULL REFERENCES customers(id),
---     facility_id UUID NOT NULL REFERENCES facilities(id),
---     storage_unit_id UUID NOT NULL REFERENCES storage_units(id),
---     temperature DECIMAL(8, 2), -- Can be NULL for equipment failures
---     temperature_unit VARCHAR(5) NOT NULL,
---     recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
---     sensor_id VARCHAR(100),
---     quality_score DECIMAL(3, 2) DEFAULT 1.0 CHECK (quality_score >= 0 AND quality_score <= 1),
---     equipment_status VARCHAR(20) DEFAULT 'normal',
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
--- );
-
--- -- Partitioned table for historical data (warm data)
--- CREATE TABLE temperature_readings_history (
---     id UUID DEFAULT uuid_generate_v4(),
---     customer_id UUID NOT NULL REFERENCES customers(id),
---     facility_id UUID NOT NULL REFERENCES facilities(id),
---     storage_unit_id UUID NOT NULL REFERENCES storage_units(id),
---     temperature DECIMAL(8, 2),
---     temperature_unit VARCHAR(5) NOT NULL,
---     recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
---     sensor_id VARCHAR(100),
---     quality_score DECIMAL(3, 2) DEFAULT 1.0 CHECK (quality_score >= 0 AND quality_score <= 1),
---     equipment_status VARCHAR(20) DEFAULT 'normal',
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     PRIMARY KEY (id, recorded_at)  -- ✅ required for range partitioning
--- ) PARTITION BY RANGE (recorded_at);
-
-
-
--- -- Create monthly partitions for the last year and next year
--- DO $$
--- DECLARE
---     start_date DATE;
---     end_date DATE;
---     partition_name TEXT;
--- BEGIN
---     -- Create partitions for last 12 months and next 12 months
---     FOR i IN -12..12 LOOP
---         start_date := DATE_TRUNC('month', CURRENT_DATE) + (i || ' months')::INTERVAL;
---         end_date := start_date + '1 month'::INTERVAL;
---         partition_name := 'temperature_readings_history_' || TO_CHAR(start_date, 'YYYY_MM');
-        
---         EXECUTE FORMAT('CREATE TABLE IF NOT EXISTS %I PARTITION OF temperature_readings_history
---                        FOR VALUES FROM (%L) TO (%L)', 
---                        partition_name, start_date, end_date);
---     END LOOP;
--- END $$;
-
--- -- ================================
--- -- AUTHENTICATION & AUTHORIZATION
--- -- ================================
-
--- -- Customer API tokens
--- CREATE TABLE customer_tokens (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
---     token_hash VARCHAR(255) NOT NULL UNIQUE,
---     token_name VARCHAR(100),
---     permissions JSONB DEFAULT '["read"]'::jsonb,
---     accessible_units UUID[] DEFAULT '{}', -- Array of unit IDs
---     rate_limit_per_hour INTEGER DEFAULT 1000,
---     expires_at TIMESTAMP WITH TIME ZONE,
---     last_used_at TIMESTAMP WITH TIME ZONE,
---     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
---     is_active BOOLEAN DEFAULT TRUE
--- );
-
--- -- ================================
--- -- METADATA & CONFIGURATION
--- -- ================================
-
--- -- Data ingestion logs
--- CREATE TABLE ingestion_logs (
---     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
---     customer_id UUID NOT NULL REFERENCES customers(id),
---     source_type VARCHAR(20) NOT NULL, -- 'csv', 'api', 'webhook'
---     source_reference VARCHAR(255), -- filename, api endpoint, etc.
---     records_processed INTEGER DEFAULT 0,
---     records_success INTEGER DEFAULT 0,
---     records_failed INTEGER DEFAULT 0,
---     error_details JSONB,
---     started_at TIMESTAMP WITH TIME ZONE NOT NULL,
---     completed_at TIMESTAMP WITH TIME ZONE,
---     status VARCHAR(20) DEFAULT 'processing' CHECK (status IN ('processing', 'completed', 'failed'))
--- );
-
--- -- System configuration
--- CREATE TABLE system_config (
---     key VARCHAR(100) PRIMARY KEY,
---     value JSONB NOT NULL,
---     description TEXT,
---     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
--- );
-
--- -- ================================
--- -- INDEXES FOR PERFORMANCE
--- -- ================================
-
--- -- Primary indexes for temperature readings
--- CREATE INDEX idx_temp_readings_customer_unit_time ON temperature_readings 
---     (customer_id, storage_unit_id, recorded_at DESC);
-
--- CREATE INDEX idx_temp_readings_recorded_at ON temperature_readings (recorded_at DESC);
-
--- CREATE INDEX idx_temp_readings_customer_time ON temperature_readings 
---     (customer_id, recorded_at DESC);
-
--- -- Indexes for lookups
--- CREATE INDEX idx_facilities_customer ON facilities (customer_id);
--- CREATE INDEX idx_storage_units_facility ON storage_units (facility_id);
--- CREATE INDEX idx_customer_tokens_customer ON customer_tokens (customer_id);
--- CREATE INDEX idx_customer_tokens_hash ON customer_tokens (token_hash) WHERE is_active = TRUE;
-
--- -- ================================
--- -- VIEWS FOR COMMON QUERIES
--- -- ================================
-
--- -- Latest temperature readings per unit
--- CREATE VIEW latest_temperature_readings AS
--- SELECT DISTINCT ON (storage_unit_id)
---     tr.storage_unit_id,
---     tr.customer_id,
---     tr.facility_id,
---     tr.temperature,
---     tr.temperature_unit,
---     tr.recorded_at,
---     tr.sensor_id,
---     tr.quality_score,
---     tr.equipment_status,
---     c.customer_code,
---     c.name as customer_name,
---     f.name as facility_name,
---     f.city,
---     f.country,
---     su.name as unit_name,
---     su.unit_code,
---     su.set_temperature,
---     su.size_value,
---     su.size_unit
--- FROM temperature_readings tr
--- JOIN customers c ON tr.customer_id = c.id
--- JOIN facilities f ON tr.facility_id = f.id  
--- JOIN storage_units su ON tr.storage_unit_id = su.id
--- WHERE c.is_active = TRUE
--- ORDER BY storage_unit_id, recorded_at DESC;
-
--- -- Customer summary view
--- CREATE VIEW customer_summary AS
--- SELECT 
---     c.id,
---     c.customer_code,
---     c.name,
---     c.data_sharing_method,
---     COUNT(DISTINCT f.id) as facility_count,
---     COUNT(DISTINCT su.id) as unit_count,
---     COUNT(DISTINCT tr.id) as total_readings,
---     MAX(tr.recorded_at) as last_reading_at
--- FROM customers c
--- LEFT JOIN facilities f ON c.id = f.customer_id
--- LEFT JOIN storage_units su ON f.id = su.facility_id
--- LEFT JOIN temperature_readings tr ON su.id = tr.storage_unit_id
--- WHERE c.is_active = TRUE
--- GROUP BY c.id, c.customer_code, c.name, c.data_sharing_method;
-
--- -- ================================
--- -- FUNCTIONS FOR DATA MANAGEMENT
--- -- ================================
-
--- -- Function to convert temperatures between units
--- CREATE OR REPLACE FUNCTION convert_temperature(
---     temp_value DECIMAL(8,2),
---     from_unit VARCHAR(5),
---     to_unit VARCHAR(5)
--- ) RETURNS DECIMAL(8,2) AS $$
--- BEGIN
---     IF from_unit = to_unit THEN
---         RETURN temp_value;
---     END IF;
-    
---     -- Convert to Celsius first
---     CASE from_unit
---         WHEN 'F' THEN temp_value := (temp_value - 32) * 5.0/9.0;
---         WHEN 'K' THEN temp_value := temp_value - 273.15;
---         -- 'C' stays as is
---     END CASE;
-    
---     -- Convert from Celsius to target unit
---     CASE to_unit
---         WHEN 'F' THEN RETURN temp_value * 9.0/5.0 + 32;
---         WHEN 'K' THEN RETURN temp_value + 273.15;
---         WHEN 'C' THEN RETURN temp_value;
---     END CASE;
-    
---     RETURN temp_value;
--- END;
--- $$ LANGUAGE plpgsql IMMUTABLE;
-
--- -- Function to convert area between units
--- CREATE OR REPLACE FUNCTION convert_area(
---     area_value DECIMAL(12,2),
---     from_unit VARCHAR(10),
---     to_unit VARCHAR(10)
--- ) RETURNS DECIMAL(12,2) AS $$
--- BEGIN
---     IF from_unit = to_unit THEN
---         RETURN area_value;
---     END IF;
-    
---     -- Convert to square meters first
---     CASE from_unit
---         WHEN 'sqft', 'ft2' THEN area_value := area_value * 0.092903;
---         -- 'sqm', 'm2' stays as is
---     END CASE;
-    
---     -- Convert from square meters to target unit
---     CASE to_unit
---         WHEN 'sqft', 'ft2' THEN RETURN area_value / 0.092903;
---         WHEN 'sqm', 'm2' THEN RETURN area_value;
---     END CASE;
-    
---     RETURN area_value;
--- END;
--- $$ LANGUAGE plpgsql IMMUTABLE;
-
--- -- ================================
--- -- TRIGGERS FOR MAINTENANCE
--- -- ================================
-
--- -- Update timestamp trigger
--- CREATE OR REPLACE FUNCTION update_updated_at_column()
--- RETURNS TRIGGER AS $$
--- BEGIN
---     NEW.updated_at = CURRENT_TIMESTAMP;
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- CREATE TRIGGER update_customers_updated_at 
---     BEFORE UPDATE ON customers
---     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
-
--- -- Data archival trigger (move old data to history table)
--- CREATE OR REPLACE FUNCTION archive_old_temperature_data()
--- RETURNS TRIGGER AS $$
--- BEGIN
---     -- Move data older than 30 days to history table
---     INSERT INTO temperature_readings_history 
---     SELECT * FROM temperature_readings 
---     WHERE recorded_at < CURRENT_TIMESTAMP - INTERVAL '30 days';
-    
---     DELETE FROM temperature_readings 
---     WHERE recorded_at < CURRENT_TIMESTAMP - INTERVAL '30 days';
-    
---     RETURN NULL;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- -- ================================
--- -- SAMPLE DATA INSERT
--- -- ================================
-
--- -- Insert assignment customers A and B
--- INSERT INTO customers (customer_code, name, data_sharing_method, data_frequency_seconds) VALUES
--- ('A', 'Customer A', 'csv', 300),
--- ('B', 'Customer B', 'api', 900);
-
--- -- Insert sample configuration
--- INSERT INTO system_config (key, value, description) VALUES
--- ('data_retention_days', '2555', 'Number of days to retain temperature data'),
--- ('max_temperature_deviation', '{"warning": 2, "critical": 5}', 'Temperature deviation thresholds'),
--- ('supported_temp_units', '["C", "F", "K"]', 'Supported temperature units'),
--- ('supported_size_units', '["sqm", "sqft", "m2", "ft2"]', 'Supported area units');
-
--- -- Add comments for documentation
--- COMMENT ON TABLE customers IS 'Customer profiles and data sharing configuration';
--- COMMENT ON TABLE facilities IS 'Customer facilities (warehouses, plants, etc.)';
--- COMMENT ON TABLE storage_units IS 'Individual temperature-monitored storage units';
--- COMMENT ON TABLE temperature_readings IS 'Recent temperature readings (hot data)';
--- COMMENT ON TABLE temperature_readings_history IS 'Historical temperature readings (warm data)';
--- COMMENT ON TABLE customer_tokens IS 'API authentication tokens for customers';
--- COMMENT ON TABLE ingestion_logs IS 'Data ingestion processing logs';
-
--- COMMENT ON COLUMN storage_units.name IS 'Can be NULL - some customers do not name their units';
--- COMMENT ON COLUMN facilities.city IS 'Can be NULL - some customers do not provide location';
--- COMMENT ON COLUMN temperature_readings.temperature IS 'Can be NULL - represents equipment failure/sensor malfunction';
-
-
--- database/schema.sql (Updated with fixed functions)
--- Temperature Monitoring System Database Schema
--- Designed to handle diverse customer data with different units and null values
-
--- Extension for UUID generation
+-- -- 2. Extensions --
+-- Enable UUID generation functions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ================================
--- CUSTOMER MANAGEMENT TABLES
--- ================================
+-- -- 3. Schema Definition --
 
--- Customers table
-CREATE TABLE IF NOT EXISTS customers (
+-- Table: system_config (Key-value store for application settings)
+CREATE TABLE IF NOT EXISTS public.system_config (
+    key VARCHAR(100) PRIMARY KEY,
+    value JSONB,
+    description TEXT,
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.system_config IS 'Stores global configuration for the application.';
+
+-- Table: customers
+CREATE TABLE IF NOT EXISTS public.customers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_code VARCHAR(10) UNIQUE NOT NULL, -- 'A', 'B', etc.
+    customer_code VARCHAR(16) UNIQUE NOT NULL,
     name VARCHAR(255) NOT NULL,
-    data_sharing_method VARCHAR(20) NOT NULL CHECK (data_sharing_method IN ('csv', 'api', 'webhook')),
-    data_frequency_seconds INTEGER DEFAULT 300,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE
+    data_sharing_method VARCHAR(16) NOT NULL,
+    data_frequency_seconds INTEGER NOT NULL,
+    data_source_url VARCHAR(2048),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+COMMENT ON TABLE public.customers IS 'Stores information about each customer.';
 
--- Facilities table  
-CREATE TABLE IF NOT EXISTS facilities (
+-- Table: facilities
+CREATE TABLE IF NOT EXISTS public.facilities (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-    facility_code VARCHAR(50) NOT NULL, -- For customer reference
-    name VARCHAR(255), -- Can be NULL
-    city VARCHAR(100), -- Can be NULL  
-    country VARCHAR(100) NOT NULL,
-    latitude DECIMAL(10, 8), -- For future geographic features
-    longitude DECIMAL(11, 8),
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(customer_id, facility_code)
+    customer_id UUID NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+    facility_code VARCHAR(64),
+    name VARCHAR(255),
+    city VARCHAR(100),
+    country VARCHAR(100),
+    latitude NUMERIC(9, 6),
+    longitude NUMERIC(9, 6),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+COMMENT ON TABLE public.facilities IS 'Stores information about customer facilities or warehouses.';
 
--- Storage units table
-CREATE TABLE IF NOT EXISTS storage_units (
+-- Table: storage_units
+CREATE TABLE IF NOT EXISTS public.storage_units (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    facility_id UUID NOT NULL REFERENCES facilities(id) ON DELETE CASCADE,
-    unit_code VARCHAR(50) NOT NULL, -- For customer reference
-    name VARCHAR(255), -- Can be NULL (like Customer A)
-    size_value DECIMAL(12, 2) NOT NULL,
-    size_unit VARCHAR(10) NOT NULL CHECK (size_unit IN ('sqm', 'sqft', 'm2', 'ft2')),
-    set_temperature DECIMAL(8, 2) NOT NULL,
-    temperature_unit VARCHAR(5) NOT NULL CHECK (temperature_unit IN ('C', 'F', 'K')),
-    equipment_type VARCHAR(50) DEFAULT 'freezer',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(facility_id, unit_code)
+    facility_id UUID NOT NULL REFERENCES public.facilities(id) ON DELETE CASCADE,
+    unit_code VARCHAR(64),
+    name VARCHAR(255),
+    size_value NUMERIC,
+    size_unit VARCHAR(16),
+    set_temperature NUMERIC,
+    temperature_unit VARCHAR(8),
+    equipment_type VARCHAR(100),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+COMMENT ON TABLE public.storage_units IS 'Represents individual temperature-controlled units within a facility.';
 
--- ================================
--- TIME SERIES DATA TABLES  
--- ================================
-
--- Main temperature readings table (hot data - recent readings)
-CREATE TABLE IF NOT EXISTS temperature_readings (
+-- Table: customer_tokens (For API authentication)
+CREATE TABLE IF NOT EXISTS public.customer_tokens (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_id UUID NOT NULL REFERENCES customers(id),
-    facility_id UUID NOT NULL REFERENCES facilities(id),
-    storage_unit_id UUID NOT NULL REFERENCES storage_units(id),
-    temperature DECIMAL(8, 2), -- Can be NULL for equipment failures
-    temperature_unit VARCHAR(5) NOT NULL,
-    recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    sensor_id VARCHAR(100),
-    quality_score DECIMAL(3, 2) DEFAULT 1.0 CHECK (quality_score >= 0 AND quality_score <= 1),
-    equipment_status VARCHAR(20) DEFAULT 'normal',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    customer_id UUID NOT NULL REFERENCES public.customers(id) ON DELETE CASCADE,
+    token_hash VARCHAR(256) NOT NULL UNIQUE,
+    token_name VARCHAR(255) NOT NULL,
+    permissions JSONB,
+    accessible_units JSONB,
+    rate_limit_per_hour INTEGER,
+    expires_at TIMESTAMPTZ,
+    last_used_at TIMESTAMPTZ,
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+COMMENT ON TABLE public.customer_tokens IS 'Stores API access tokens for customers.';
 
--- Partitioned table for historical data (warm data)
-CREATE TABLE IF NOT EXISTS temperature_readings_history (
+-- Table: ingestion_logs
+CREATE TABLE IF NOT EXISTS public.ingestion_logs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_id UUID NOT NULL REFERENCES customers(id),
-    facility_id UUID NOT NULL REFERENCES facilities(id),
-    storage_unit_id UUID NOT NULL REFERENCES storage_units(id),
-    temperature DECIMAL(8, 2),
-    temperature_unit VARCHAR(5) NOT NULL,
-    recorded_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    sensor_id VARCHAR(100),
-    quality_score DECIMAL(3, 2) DEFAULT 1.0 CHECK (quality_score >= 0 AND quality_score <= 1),
-    equipment_status VARCHAR(20) DEFAULT 'normal',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    customer_id UUID REFERENCES public.customers(id) ON DELETE SET NULL,
+    ingestion_type VARCHAR(16) NOT NULL, -- 'api', 'csv'
+    status VARCHAR(16) NOT NULL, -- 'success', 'failure', 'partial'
+    records_processed INTEGER DEFAULT 0,
+    records_succeeded INTEGER DEFAULT 0,
+    records_failed INTEGER DEFAULT 0,
+    start_time TIMESTAMPTZ NOT NULL,
+    end_time TIMESTAMPTZ,
+    source_url VARCHAR(2048),
+    error_message TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+COMMENT ON TABLE public.ingestion_logs IS 'Logs each data ingestion attempt for traceability.';
+
+
+-- -- 4. Partitioned Table for Time-Series Data --
+-- This is the main "hot" table for recent data. It is partitioned by month.
+CREATE TABLE IF NOT EXISTS public.temperature_readings (
+    id BIGSERIAL NOT NULL,
+    customer_id UUID NOT NULL,
+    facility_id UUID NOT NULL,
+    storage_unit_id UUID NOT NULL,
+    temperature REAL NOT NULL,
+    temperature_unit VARCHAR(8) NOT NULL,
+    recorded_at TIMESTAMPTZ NOT NULL,
+    sensor_id VARCHAR(255),
+    quality_score REAL,
+    equipment_status VARCHAR(64) DEFAULT 'normal',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    -- Define the primary key to include the partition key for efficiency
+    PRIMARY KEY (id, recorded_at)
 ) PARTITION BY RANGE (recorded_at);
 
--- Create monthly partitions for the last year and next year
-DO $$
+COMMENT ON TABLE public.temperature_readings IS 'Parent table for storing all temperature readings. Partitioned by month.';
+
+-- Automated Partition Creation Function
+-- This function will automatically create a new monthly partition if one doesn't exist
+-- when data is inserted. This is much more robust than manual partition creation.
+CREATE OR REPLACE FUNCTION create_temperature_partition_if_not_exists()
+RETURNS TRIGGER AS $$
 DECLARE
-    start_date DATE;
-    end_date DATE;
+    partition_date TEXT;
     partition_name TEXT;
 BEGIN
-    -- Create partitions for last 12 months and next 12 months
-    FOR i IN -12..12 LOOP
-        start_date := DATE_TRUNC('month', CURRENT_DATE) + (i || ' months')::INTERVAL;
-        end_date := start_date + '1 month'::INTERVAL;
-        partition_name := 'temperature_readings_history_' || TO_CHAR(start_date, 'YYYY_MM');
-        
-        EXECUTE FORMAT('CREATE TABLE IF NOT EXISTS %I PARTITION OF temperature_readings_history
-                       FOR VALUES FROM (%L) TO (%L)', 
-                       partition_name, start_date, end_date);
-    END LOOP;
-END $$;
-
--- ================================
--- AUTHENTICATION & AUTHORIZATION
--- ================================
-
--- Customer API tokens
-CREATE TABLE IF NOT EXISTS customer_tokens (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_id UUID NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
-    token_hash VARCHAR(255) NOT NULL UNIQUE,
-    token_name VARCHAR(100),
-    permissions JSONB DEFAULT '["read"]'::jsonb,
-    accessible_units UUID[] DEFAULT '{}', -- Array of unit IDs
-    rate_limit_per_hour INTEGER DEFAULT 1000,
-    expires_at TIMESTAMP WITH TIME ZONE,
-    last_used_at TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    is_active BOOLEAN DEFAULT TRUE
-);
-
--- ================================
--- METADATA & CONFIGURATION
--- ================================
-
--- Data ingestion logs
-CREATE TABLE IF NOT EXISTS ingestion_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-    customer_id UUID NOT NULL REFERENCES customers(id),
-    source_type VARCHAR(20) NOT NULL, -- 'csv', 'api', 'webhook'
-    source_reference VARCHAR(255), -- filename, api endpoint, etc.
-    records_processed INTEGER DEFAULT 0,
-    records_success INTEGER DEFAULT 0,
-    records_failed INTEGER DEFAULT 0,
-    error_details JSONB,
-    started_at TIMESTAMP WITH TIME ZONE NOT NULL,
-    completed_at TIMESTAMP WITH TIME ZONE,
-    status VARCHAR(20) DEFAULT 'processing' CHECK (status IN ('processing', 'completed', 'failed'))
-);
-
--- System configuration
-CREATE TABLE IF NOT EXISTS system_config (
-    key VARCHAR(100) PRIMARY KEY,
-    value JSONB NOT NULL,
-    description TEXT,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- ================================
--- INDEXES FOR PERFORMANCE
--- ================================
-
--- Primary indexes for temperature readings
-CREATE INDEX IF NOT EXISTS idx_temp_readings_customer_unit_time ON temperature_readings 
-    (customer_id, storage_unit_id, recorded_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_temp_readings_recorded_at ON temperature_readings (recorded_at DESC);
-
-CREATE INDEX IF NOT EXISTS idx_temp_readings_customer_time ON temperature_readings 
-    (customer_id, recorded_at DESC);
-
--- Indexes for lookups
-CREATE INDEX IF NOT EXISTS idx_facilities_customer ON facilities (customer_id);
-CREATE INDEX IF NOT EXISTS idx_storage_units_facility ON storage_units (facility_id);
-CREATE INDEX IF NOT EXISTS idx_customer_tokens_customer ON customer_tokens (customer_id);
-CREATE INDEX IF NOT EXISTS idx_customer_tokens_hash ON customer_tokens (token_hash) WHERE is_active = TRUE;
-
--- ================================
--- FUNCTIONS FOR DATA MANAGEMENT
--- ================================
-
--- Function to convert temperatures between units
-CREATE OR REPLACE FUNCTION convert_temperature(
-    temp_value DECIMAL(8,2),
-    from_unit VARCHAR(5),
-    to_unit VARCHAR(5)
-) RETURNS DECIMAL(8,2) AS $$
-BEGIN
-    IF temp_value IS NULL THEN
-        RETURN NULL;
+    partition_date := to_char(NEW.recorded_at, 'YYYY_MM');
+    partition_name := 'temperature_readings_history_' || partition_date;
+    
+    -- Check if the partition already exists
+    IF NOT EXISTS(SELECT 1 FROM pg_tables WHERE tablename=partition_name) THEN
+        -- Create the new partition
+        EXECUTE format(
+            'CREATE TABLE %I PARTITION OF public.temperature_readings FOR VALUES FROM (%L) TO (%L)',
+            partition_name,
+            date_trunc('month', NEW.recorded_at),
+            date_trunc('month', NEW.recorded_at) + interval '1 month'
+        );
+        RAISE NOTICE 'Created partition %', partition_name;
     END IF;
     
-    IF from_unit = to_unit THEN
-        RETURN temp_value;
-    END IF;
-    
-    -- Convert to Celsius first
-    CASE from_unit
-        WHEN 'F' THEN temp_value := (temp_value - 32) * 5.0/9.0;
-        WHEN 'K' THEN temp_value := temp_value - 273.15;
-        ELSE NULL; -- 'C' stays as is
-    END CASE;
-    
-    -- Convert from Celsius to target unit
-    CASE to_unit
-        WHEN 'F' THEN RETURN temp_value * 9.0/5.0 + 32;
-        WHEN 'K' THEN RETURN temp_value + 273.15;
-        ELSE RETURN temp_value; -- 'C' or unknown unit
-    END CASE;
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-
--- Function to convert area between units
-CREATE OR REPLACE FUNCTION convert_area(
-    area_value DECIMAL(12,2),
-    from_unit VARCHAR(10),
-    to_unit VARCHAR(10)
-) RETURNS DECIMAL(12,2) AS $$
-BEGIN
-    IF area_value IS NULL THEN
-        RETURN NULL;
-    END IF;
-    
-    IF from_unit = to_unit THEN
-        RETURN area_value;
-    END IF;
-    
-    -- Convert to square meters first
-    CASE from_unit
-        WHEN 'sqft', 'ft2' THEN area_value := area_value * 0.092903;
-        ELSE NULL; -- 'sqm', 'm2' stays as is
-    END CASE;
-    
-    -- Convert from square meters to target unit
-    CASE to_unit
-        WHEN 'sqft', 'ft2' THEN RETURN area_value / 0.092903;
-        ELSE RETURN area_value; -- 'sqm', 'm2' or unknown unit
-    END CASE;
-END;
-$$ LANGUAGE plpgsql IMMUTABLE;
-
--- ================================
--- VIEWS FOR COMMON QUERIES
--- ================================
-
--- Latest temperature readings per unit
-CREATE OR REPLACE VIEW latest_temperature_readings AS
-SELECT DISTINCT ON (storage_unit_id)
-    tr.storage_unit_id,
-    tr.customer_id,
-    tr.facility_id,
-    tr.temperature,
-    tr.temperature_unit,
-    tr.recorded_at,
-    tr.sensor_id,
-    tr.quality_score,
-    tr.equipment_status,
-    c.customer_code,
-    c.name as customer_name,
-    f.name as facility_name,
-    f.city,
-    f.country,
-    su.name as unit_name,
-    su.unit_code,
-    su.set_temperature,
-    su.size_value,
-    su.size_unit
-FROM temperature_readings tr
-JOIN customers c ON tr.customer_id = c.id
-JOIN facilities f ON tr.facility_id = f.id  
-JOIN storage_units su ON tr.storage_unit_id = su.id
-WHERE c.is_active = TRUE
-ORDER BY storage_unit_id, recorded_at DESC;
-
--- Customer summary view
-CREATE OR REPLACE VIEW customer_summary AS
-SELECT 
-    c.id,
-    c.customer_code,
-    c.name,
-    c.data_sharing_method,
-    COUNT(DISTINCT f.id) as facility_count,
-    COUNT(DISTINCT su.id) as unit_count,
-    COUNT(DISTINCT tr.id) as total_readings,
-    MAX(tr.recorded_at) as last_reading_at
-FROM customers c
-LEFT JOIN facilities f ON c.id = f.customer_id
-LEFT JOIN storage_units su ON f.id = su.facility_id
-LEFT JOIN temperature_readings tr ON su.id = tr.storage_unit_id
-WHERE c.is_active = TRUE
-GROUP BY c.id, c.customer_code, c.name, c.data_sharing_method;
-
--- ================================
--- TRIGGERS FOR MAINTENANCE
--- ================================
-
--- Update timestamp trigger
-CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
-BEGIN
-    NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER update_customers_updated_at 
-    BEFORE UPDATE ON customers
-    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+-- Trigger to execute the function before an insert
+DROP TRIGGER IF EXISTS insert_temperature_trigger ON public.temperature_readings;
+CREATE TRIGGER insert_temperature_trigger
+    BEFORE INSERT ON public.temperature_readings
+    FOR EACH ROW EXECUTE FUNCTION create_temperature_partition_if_not_exists();
 
--- ================================
--- SAMPLE DATA INSERT
--- ================================
+-- Create Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_temperature_readings_recorded_at ON public.temperature_readings (recorded_at DESC);
+CREATE INDEX IF NOT EXISTS idx_temperature_readings_unit_id ON public.temperature_readings (storage_unit_id);
 
--- Insert assignment customers A and B
-INSERT INTO customers (customer_code, name, data_sharing_method, data_frequency_seconds) VALUES
-('A', 'Customer A', 'csv', 300),
-('B', 'Customer B', 'api', 900)
-ON CONFLICT (customer_code) DO NOTHING;
 
--- Insert sample configuration
-INSERT INTO system_config (key, value, description) VALUES
-('data_retention_days', '2555', 'Number of days to retain temperature data'),
-('max_temperature_deviation', '{"warning": 2, "critical": 5}', 'Temperature deviation thresholds'),
-('supported_temp_units', '["C", "F", "K"]', 'Supported temperature units'),
-('supported_size_units', '["sqm", "sqft", "m2", "ft2"]', 'Supported area units')
+-- -- 5. Views --
+
+-- View: latest_temperature_readings
+-- Efficiently gets the most recent reading for every storage unit.
+CREATE OR REPLACE VIEW public.latest_temperature_readings AS
+SELECT DISTINCT ON (r.storage_unit_id)
+    r.id,
+    r.customer_id,
+    r.facility_id,
+    r.storage_unit_id,
+    r.temperature,
+    r.temperature_unit,
+    r.recorded_at,
+    r.sensor_id,
+    r.quality_score
+FROM public.temperature_readings r
+ORDER BY r.storage_unit_id, r.recorded_at DESC;
+
+-- View: customer_summary
+-- Provides a high-level overview of each customer's assets.
+CREATE OR REPLACE VIEW public.customer_summary AS
+SELECT
+    c.id AS customer_id,
+    c.name AS customer_name,
+    c.data_sharing_method,
+    COUNT(DISTINCT f.id) AS facility_count,
+    COUNT(DISTINCT u.id) AS unit_count
+FROM public.customers c
+LEFT JOIN public.facilities f ON c.id = f.customer_id
+LEFT JOIN public.storage_units u ON f.id = u.facility_id
+GROUP BY c.id, c.name, c.data_sharing_method;
+
+
+-- -- 6. Permissions --
+-- Grant all necessary privileges to the application user 'tm_user'
+GRANT CONNECT ON DATABASE temperature_db TO tm_user;
+GRANT USAGE ON SCHEMA public TO tm_user;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO tm_user;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO tm_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON TABLES TO tm_user;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT ALL ON SEQUENCES TO tm_user;
+
+
+
+
+-- Seed the system_config table with default values
+INSERT INTO public.system_config (key, value, description) VALUES
+('data_retention_days', '730', 'Number of days to retain hot temperature data before archiving.')
 ON CONFLICT (key) DO NOTHING;
 
--- Add comments for documentation
-COMMENT ON TABLE customers IS 'Customer profiles and data sharing configuration';
-COMMENT ON TABLE facilities IS 'Customer facilities (warehouses, plants, etc.)';
-COMMENT ON TABLE storage_units IS 'Individual temperature-monitored storage units';
-COMMENT ON TABLE temperature_readings IS 'Recent temperature readings (hot data)';
-COMMENT ON TABLE temperature_readings_history IS 'Historical temperature readings (warm data)';
-COMMENT ON TABLE customer_tokens IS 'API authentication tokens for customers';
-COMMENT ON TABLE ingestion_logs IS 'Data ingestion processing logs';
+INSERT INTO public.system_config (key, value, description) VALUES
+('max_temperature_deviation', '{"warning": 2, "critical": 5}', 'Temperature deviation thresholds in degrees Celsius.')
+ON CONFLICT (key) DO NOTHING;
 
-COMMENT ON COLUMN storage_units.name IS 'Can be NULL - some customers do not name their units';
-COMMENT ON COLUMN facilities.city IS 'Can be NULL - some customers do not provide location';
-COMMENT ON COLUMN temperature_readings.temperature IS 'Can be NULL - represents equipment failure/sensor malfunction';
+-- Seed the customers table with initial data, for assignemnt purposes
+INSERT INTO public.customers (id, customer_code, name, data_sharing_method, data_frequency_seconds) VALUES
+('9cd32f83-5dc5-4214-ac24-809889669cea', 'A', 'Customer A', 'api', 60),
+('b5f0405b-a4dd-4894-b636-5ca059884e83', 'B', 'Customer B', 'csv', 300)
+ON CONFLICT (id) DO NOTHING;
+
+COMMIT;
