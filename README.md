@@ -35,10 +35,20 @@ A temperature monitoring system that simulates customer data, ingests it through
 
 ### Installation
 ```bash
-git clone <repository-url>
+git clone https://github.com/aryan-at-ul/temperature-monitoring-system.git
 cd temperature-monitoring-system
 pip install -r requirements.txt
 ```
+
+### FOR EXACT REPLICATION 
+```
+psql -U postgres -h localhost -c "CREATE USER tm_user WITH PASSWORD 'tm_pass';"
+psql -U postgres -h localhost -c "CREATE DATABASE temperature_db OWNER tm_user;"
+
+PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -f temperature_db_dump.sql
+```
+This created the exact replica of the Database used for dev and testing
+
 
 ### Database Setup
 ```bash
