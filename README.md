@@ -1,6 +1,43 @@
-# Temperature Monitoring System
+# 🧊 Temperature Monitoring System — Architectural PoC
 
-A temperature monitoring system that simulates customer data, ingests it through a pipeline, and provides APIs and a dashboard for visualization. Built as a proof-of-concept with multiple services that can run independently.
+This repository was created for the **Gyre Energy Backend Interview Exercise** (June 2025).  
+It is a complete **proof-of-concept (PoC)** that shows how to design and build a backend system for collecting and serving temperature data from multiple customers.
+
+The goal is to simulate a real-world setup with mock data sources, data pipelines, an API, and a simple dashboard. This makes it easy to understand how the full system might work in production.
+
+---
+
+## 🧩 What’s Included (Based on the Exercises)
+
+- **Exercise 0: Mock Pipeline for Customers**  
+  → Simulated customers run on local ports (e.g. 8001, 8002) using API or CSV-based templates. These mock endpoints are used by the ingestion system to fetch data.
+
+- **Exercise 1: Building a Database**  
+  → A PostgreSQL database is created to store customer profiles and their temperature readings.  
+  It currently holds recent data (hot DB) and can be extended to:
+  - Archive old data using partitions or time-based rules
+  - Store historical data in flat files (e.g. Parquet) in S3 for cost-effective long-term access
+
+- **Exercise 2: Building an API**  
+  → A FastAPI backend exposes a RESTful endpoint to get the latest temperature reading for any customer and unit.  
+  - Input validation, proper status codes, and error handling are implemented  
+  - Test cases and authentication examples can be added if needed
+
+- **Exercise 3: Data Collection from Customers**  
+  → A data ingestion pipeline regularly collects data from:
+  - **Customer A**: CSV download endpoint (simulating no API access)  
+  - **Customer B**: Real-time API with structured JSON data  
+  This pipeline processes, validates, and publishes the data to a queue for insertion into the database.
+
+---
+
+⚠️ **Note**: The dashboard (built with Flask) is **not part of the official assignment**, but is added here to help test the API visually and confirm that data is flowing correctly.
+
+---
+
+
+This PoC is modular—each Python module can be run as its own service, with additional configuration and communication logic enabling full microservice deployment.
+
 
 
 ## 🏗️ System Architecture
