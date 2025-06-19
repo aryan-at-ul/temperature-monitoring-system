@@ -12,17 +12,23 @@
                     Welcome to your Temperature Monitoring Dashboard
                 </h1>
                 <p class="lead">
-                    Hello, <strong>{{ profile.name }}</strong>! 
+                    {% if profile and profile.name %}
+                        Hello, <strong>{{ profile.name }}</strong>! 
+                    {% else %}
+                        Hello, <strong>User</strong>!
+                    {% endif %}
                     Here's a summary of your temperature monitoring data.
                 </p>
-                <p>
-                    <span class="badge bg-primary">{{ profile.facility_count }} Facilities</span>
-                    <span class="badge bg-info">{{ profile.unit_count }} Storage Units</span>
-                    <span class="badge bg-secondary">{{ profile.active_readings_count }} Temperature Readings</span>
-                    {% if profile.last_reading_time %}
-                        <span class="badge bg-success">Last reading: {{ profile.last_reading_time }}</span>
-                    {% endif %}
-                </p>
+                {% if profile %}
+                    <p>
+                        <span class="badge bg-primary">{% if profile.facility_count is defined %}{{ profile.facility_count }}{% else %}0{% endif %} Facilities</span>
+                        <span class="badge bg-info">{% if profile.unit_count is defined %}{{ profile.unit_count }}{% else %}0{% endif %} Storage Units</span>
+                        <span class="badge bg-secondary">{% if profile.active_readings_count is defined %}{{ profile.active_readings_count }}{% else %}0{% endif %} Temperature Readings</span>
+                        {% if profile.last_reading_time %}
+                            <span class="badge bg-success">Last reading: {{ profile.last_reading_time }}</span>
+                        {% endif %}
+                    </p>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -36,7 +42,11 @@
                 <i class="bi bi-thermometer-half display-1 mb-3"></i>
                 <h5 class="card-title">Average Temperature</h5>
                 <h2 class="card-text">
-                    {{ "%.1f"|format(temp_stats.avg_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% if temp_stats and temp_stats.avg_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.avg_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% else %}
+                        N/A
+                    {% endif %}
                 </h2>
             </div>
         </div>
@@ -47,7 +57,11 @@
                 <i class="bi bi-arrow-down-circle display-1 mb-3"></i>
                 <h5 class="card-title">Minimum Temperature</h5>
                 <h2 class="card-text">
-                    {{ "%.1f"|format(temp_stats.min_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% if temp_stats and temp_stats.min_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.min_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% else %}
+                        N/A
+                    {% endif %}
                 </h2>
             </div>
         </div>
@@ -58,7 +72,11 @@
                 <i class="bi bi-arrow-up-circle display-1 mb-3"></i>
                 <h5 class="card-title">Maximum Temperature</h5>
                 <h2 class="card-text">
-                    {{ "%.1f"|format(temp_stats.max_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% if temp_stats and temp_stats.max_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.max_temperature) }}°{{ temp_stats.temperature_unit }}
+                    {% else %}
+                        N/A
+                    {% endif %}
                 </h2>
             </div>
         </div>
@@ -69,8 +87,12 @@
                 <i class="bi bi-check-circle display-1 mb-3"></i>
                 <h5 class="card-title">Normal Readings</h5>
                 <h2 class="card-text">
-                    {{ temp_stats.normal_count }}
-                    <small>({{ (temp_stats.normal_count / temp_stats.reading_count * 100)|int }}%)</small>
+                    {% if temp_stats and temp_stats.normal_count is defined and temp_stats.reading_count is defined and temp_stats.reading_count > 0 %}
+                        {{ temp_stats.normal_count }}
+                        <small>({{ (temp_stats.normal_count / temp_stats.reading_count * 100)|int }}%)</small>
+                    {% else %}
+                        N/A
+                    {% endif %}
                 </h2>
             </div>
         </div>
@@ -120,32 +142,52 @@
                             </tr>
                         </thead>
                         <tbody>
-                            {% for reading in latest_readings[:10] %}
-                                <tr>
-                                    <td>
-                                        <a href="{{ url_for('customer.unit_details', unit_id=reading.storage_unit_id) }}">
-                                            {{ reading.unit_code or reading.storage_unit_id }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        {{ "%.1f"|format(reading.temperature) }}°{{ reading.temperature_unit }}
-                                    </td>
-                                    <td>{{ reading.recorded_at }}</td>
-                                    <td>
-                                        {% if reading.equipment_status == "normal" %}
-                                            <span class="badge bg-success">Normal</span>
-                                        {% elif reading.equipment_status == "warning" %}
-                                            <span class="badge bg-warning text-dark">Warning</span>
-                                        {% else %}
-                                            <span class="badge bg-danger">{{ reading.equipment_status }}</span>
-                                        {% endif %}
-                                    </td>
-                                </tr>
+                            {% if latest_readings and latest_readings|length > 0 %}
+                                {% for reading in latest_readings[:10] %}
+                                    <tr>
+                                        <td>
+                                            {% if reading.storage_unit_id is defined %}
+                                                <a href="{{ url_for('customer.unit_details', unit_id=reading.storage_unit_id) }}">
+                                                    {{ reading.unit_code if reading.unit_code is defined else reading.storage_unit_id }}
+                                                </a>
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reading.temperature is defined %}
+                                                {{ "%.1f"|format(reading.temperature) }}°{{ reading.temperature_unit }}
+                                            {% else %}
+                                                N/A
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reading.recorded_at is defined %}
+                                                {{ reading.recorded_at }}
+                                            {% else %}
+                                                Unknown
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if reading.equipment_status is defined %}
+                                                {% if reading.equipment_status == "normal" %}
+                                                    <span class="badge bg-success">Normal</span>
+                                                {% elif reading.equipment_status == "warning" %}
+                                                    <span class="badge bg-warning text-dark">Warning</span>
+                                                {% else %}
+                                                    <span class="badge bg-danger">{{ reading.equipment_status }}</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="badge bg-secondary">Unknown</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
                             {% else %}
                                 <tr>
                                     <td colspan="4" class="text-center">No temperature readings available</td>
                                 </tr>
-                            {% endfor %}
+                            {% endif %}
                         </tbody>
                     </table>
                 </div>
@@ -166,22 +208,30 @@
             </div>
             <div class="card-body">
                 <div class="list-group">
-                    {% for facility in facilities %}
-                        <a href="{{ url_for('customer.facility_details', facility_id=facility.id) }}" 
-                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
-                            <div>
-                                <h6 class="mb-1">{{ facility.name or facility.facility_code }}</h6>
-                                <small class="text-muted">{{ facility.city }}, {{ facility.country }}</small>
-                            </div>
-                            <span class="badge bg-primary rounded-pill">
-                                <i class="bi bi-thermometer"></i>
-                            </span>
-                        </a>
+                    {% if facilities and facilities|length > 0 %}
+                        {% for facility in facilities %}
+                            <a href="{{ url_for('customer.facility_details', facility_id=facility.id) }}" 
+                               class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-1">{{ facility.name if facility.name is defined else facility.facility_code }}</h6>
+                                    <small class="text-muted">
+                                        {% if facility.city is defined and facility.country is defined %}
+                                            {{ facility.city }}, {{ facility.country }}
+                                        {% else %}
+                                            Unknown location
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <span class="badge bg-primary rounded-pill">
+                                    <i class="bi bi-thermometer"></i>
+                                </span>
+                            </a>
+                        {% endfor %}
                     {% else %}
                         <div class="list-group-item text-center">
                             <p class="mb-0">No facilities available</p>
                         </div>
-                    {% endfor %}
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -240,7 +290,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Get min/max temp values for Y-axis scaling
-    {% if temp_stats %}
+    {% if temp_stats and temp_stats.min_temperature is defined and temp_stats.max_temperature is defined %}
         const minTemp = {{ temp_stats.min_temperature }} - 10;
         const maxTemp = {{ temp_stats.max_temperature }} + 10;
     {% else %}
@@ -267,13 +317,17 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 label: 'Average Temperature',
                 data: [
-                    {{ "%.1f"|format(temp_stats.avg_temperature) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.3) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature + 0.2) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.1) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature + 0.4) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature - 0.2) }},
-                    {{ "%.1f"|format(temp_stats.avg_temperature) }}
+                    {% if temp_stats and temp_stats.avg_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.avg_temperature) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature - 0.3) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature + 0.2) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature - 0.1) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature + 0.4) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature - 0.2) }},
+                        {{ "%.1f"|format(temp_stats.avg_temperature) }}
+                    {% else %}
+                        -3, -3.3, -2.8, -3.1, -2.6, -3.2, -3
+                    {% endif %}
                 ],
                 borderColor: 'rgba(54, 162, 235, 1)',
                 backgroundColor: 'rgba(54, 162, 235, 0.2)',
@@ -284,13 +338,17 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 label: 'Min Temperature',
                 data: [
-                    {{ "%.1f"|format(temp_stats.min_temperature) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature - 0.5) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature + 0.3) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature - 0.2) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature + 0.1) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature - 0.4) }},
-                    {{ "%.1f"|format(temp_stats.min_temperature) }}
+                    {% if temp_stats and temp_stats.min_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.min_temperature) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature - 0.5) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature + 0.3) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature - 0.2) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature + 0.1) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature - 0.4) }},
+                        {{ "%.1f"|format(temp_stats.min_temperature) }}
+                    {% else %}
+                        -5, -5.5, -4.7, -5.2, -4.9, -5.4, -5
+                    {% endif %}
                 ],
                 borderColor: 'rgba(40, 167, 69, 1)',
                 backgroundColor: 'rgba(40, 167, 69, 0.1)',
@@ -301,13 +359,17 @@ document.addEventListener('DOMContentLoaded', function() {
             {
                 label: 'Max Temperature',
                 data: [
-                    {{ "%.1f"|format(temp_stats.max_temperature) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature - 0.2) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature + 0.5) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature - 0.3) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature + 0.2) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature - 0.1) }},
-                    {{ "%.1f"|format(temp_stats.max_temperature) }}
+                    {% if temp_stats and temp_stats.max_temperature is defined %}
+                        {{ "%.1f"|format(temp_stats.max_temperature) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature - 0.2) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature + 0.5) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature - 0.3) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature + 0.2) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature - 0.1) }},
+                        {{ "%.1f"|format(temp_stats.max_temperature) }}
+                    {% else %}
+                        -1, -1.2, -0.5, -1.3, -0.8, -1.1, -1
+                    {% endif %}
                 ],
                 borderColor: 'rgba(220, 53, 69, 1)',
                 backgroundColor: 'rgba(220, 53, 69, 0.1)',
@@ -331,7 +393,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     max: maxTemp,
                     title: {
                         display: true,
-                        text: 'Temperature (°{{ temp_stats.temperature_unit }})'
+                        text: 'Temperature (°{% if temp_stats and temp_stats.temperature_unit is defined %}{{ temp_stats.temperature_unit }}{% else %}C{% endif %})'
                     }
                 },
                 x: {
@@ -351,7 +413,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     intersect: false,
                     callbacks: {
                         label: function(context) {
-                            return context.dataset.label + ': ' + context.parsed.y + '°{{ temp_stats.temperature_unit }}';
+                            return context.dataset.label + ': ' + context.parsed.y + '°{% if temp_stats and temp_stats.temperature_unit is defined %}{{ temp_stats.temperature_unit }}{% else %}C{% endif %}';
                         }
                     }
                 }

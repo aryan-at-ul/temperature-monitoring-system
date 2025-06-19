@@ -63,12 +63,46 @@ class TemperatureRepository:
             self.db.connection.commit()
             return len(readings)
     
+    # def get_latest_readings_by_customer(self, customer_code: str, limit: int = 100) -> List[TemperatureReading]:
+    #     """Get latest temperature readings for a customer"""
+    #     query = """
+    #     SELECT tr.id, tr.customer_id, tr.facility_id, tr.storage_unit_id,
+    #            tr.temperature, tr.temperature_unit, tr.recorded_at, tr.sensor_id,
+    #            tr.quality_score, tr.equipment_status, tr.created_at
+    #     FROM temperature_readings tr
+    #     JOIN customers c ON tr.customer_id = c.id
+    #     WHERE c.customer_code = %s
+    #     ORDER BY tr.recorded_at DESC
+    #     LIMIT %s
+    #     """
+    #     results = self.db.execute_query(query, (customer_code, limit))
+        
+    #     readings = []
+    #     for row in results:
+    #         reading = TemperatureReading(
+    #             id=row['id'],
+    #             customer_id=row['customer_id'],
+    #             facility_id=row['facility_id'],
+    #             storage_unit_id=row['storage_unit_id'],
+    #             temperature=float(row['temperature']) if row['temperature'] is not None else None,
+    #             temperature_unit=row['temperature_unit'],
+    #             recorded_at=row['recorded_at'],
+    #             sensor_id=row['sensor_id'],
+    #             quality_score=float(row['quality_score']),
+    #             equipment_status=row['equipment_status'],
+    #             created_at=row['created_at']
+    #         )
+    #         readings.append(reading)
+        
+    #     return readings
+
+
     def get_latest_readings_by_customer(self, customer_code: str, limit: int = 100) -> List[TemperatureReading]:
         """Get latest temperature readings for a customer"""
         query = """
         SELECT tr.id, tr.customer_id, tr.facility_id, tr.storage_unit_id,
-               tr.temperature, tr.temperature_unit, tr.recorded_at, tr.sensor_id,
-               tr.quality_score, tr.equipment_status, tr.created_at
+            tr.temperature, tr.temperature_unit, tr.recorded_at, tr.sensor_id,
+            tr.quality_score, tr.equipment_status, tr.created_at
         FROM temperature_readings tr
         JOIN customers c ON tr.customer_id = c.id
         WHERE c.customer_code = %s
@@ -88,23 +122,61 @@ class TemperatureRepository:
                 temperature_unit=row['temperature_unit'],
                 recorded_at=row['recorded_at'],
                 sensor_id=row['sensor_id'],
-                quality_score=float(row['quality_score']),
+                quality_score=int(row['quality_score']),  # Changed from float to int
                 equipment_status=row['equipment_status'],
                 created_at=row['created_at']
             )
             readings.append(reading)
         
         return readings
+
+
     
+    # def get_readings_by_unit_and_timerange(self, 
+    #                                      unit_id: UUID, 
+    #                                      start_time: datetime, 
+    #                                      end_time: datetime) -> List[TemperatureReading]:
+    #     """Get readings for a specific unit within time range"""
+    #     query = """
+    #     SELECT id, customer_id, facility_id, storage_unit_id,
+    #            temperature, temperature_unit, recorded_at, sensor_id,
+    #            quality_score, equipment_status, created_at
+    #     FROM temperature_readings
+    #     WHERE storage_unit_id = %s 
+    #     AND recorded_at BETWEEN %s AND %s
+    #     ORDER BY recorded_at ASC
+    #     """
+    #     results = self.db.execute_query(query, (unit_id, start_time, end_time))
+        
+    #     readings = []
+    #     for row in results:
+    #         reading = TemperatureReading(
+    #             id=row['id'],
+    #             customer_id=row['customer_id'],
+    #             facility_id=row['facility_id'],
+    #             storage_unit_id=row['storage_unit_id'],
+    #             temperature=float(row['temperature']) if row['temperature'] is not None else None,
+    #             temperature_unit=row['temperature_unit'],
+    #             recorded_at=row['recorded_at'],
+    #             sensor_id=row['sensor_id'],
+    #             quality_score=float(row['quality_score']),
+    #             equipment_status=row['equipment_status'],
+    #             created_at=row['created_at']
+    #         )
+    #         readings.append(reading)
+        
+    #     return readings
+    
+
     def get_readings_by_unit_and_timerange(self, 
-                                         unit_id: UUID, 
-                                         start_time: datetime, 
-                                         end_time: datetime) -> List[TemperatureReading]:
+                                        unit_id: UUID, 
+                                        start_time: datetime, 
+                                        end_time: datetime) -> List[TemperatureReading]:
         """Get readings for a specific unit within time range"""
         query = """
         SELECT id, customer_id, facility_id, storage_unit_id,
-               temperature, temperature_unit, recorded_at, sensor_id,
-               quality_score, equipment_status, created_at
+            temperature, temperature_unit, recorded_at, sensor_id,
+            quality_score, equipment_status, created_at
         FROM temperature_readings
         WHERE storage_unit_id = %s 
         AND recorded_at BETWEEN %s AND %s
@@ -123,14 +195,16 @@ class TemperatureRepository:
                 temperature_unit=row['temperature_unit'],
                 recorded_at=row['recorded_at'],
                 sensor_id=row['sensor_id'],
-                quality_score=float(row['quality_score']),
+                quality_score=int(row['quality_score']),  # Changed from float to int
                 equipment_status=row['equipment_status'],
                 created_at=row['created_at']
             )
             readings.append(reading)
         
         return readings
-    
+
+
+
     def get_equipment_failures(self, customer_code: Optional[str] = None, 
                              hours: int = 24) -> List[Dict[str, Any]]:
         """Get equipment failures in the last N hours"""

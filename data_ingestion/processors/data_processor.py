@@ -189,6 +189,70 @@ class DataProcessor:
         
         return events_processed
 
+    # def map_temperature_reading(self, event: Dict[str, Any]) -> Dict[str, Any]:
+    #     """
+    #     Map a data event to a temperature reading structure
+        
+    #     Args:
+    #         event: The data event
+            
+    #     Returns:
+    #         Mapped temperature reading data
+    #     """
+    #     data = event['data']
+        
+    #     # Extract timestamp
+    #     timestamp_str = data.get('timestamp') or data.get('recorded_at') or data.get('reading_time')
+        
+    #     # Handle different timestamp formats or provide default
+    #     try:
+    #         if timestamp_str:
+    #             timestamp = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+    #         else:
+    #             timestamp = datetime.now()
+    #     except (ValueError, TypeError):
+    #         logger.warning(f"Invalid timestamp format: {timestamp_str}, using current time")
+    #         timestamp = datetime.now()
+        
+    #     # Safely convert temperature to float
+    #     try:
+    #         temp_value = data.get('temperature')
+    #         if temp_value is None or temp_value == '':
+    #             temperature = 0.0
+    #         else:
+    #             temperature = float(temp_value)
+    #     except (ValueError, TypeError):
+    #         logger.warning(f"Invalid temperature value: {data.get('temperature')}, using 0.0")
+    #         temperature = 0.0
+            
+    #     # Safely convert quality score to float
+    #     try:
+    #         quality_score_value = data.get('quality_score')
+    #         if quality_score_value is None or quality_score_value == '':
+    #             quality_score = 1.0
+    #         else:
+    #             quality_score = float(quality_score_value)
+    #     except (ValueError, TypeError):
+    #         logger.warning(f"Invalid quality score value: {data.get('quality_score')}, using 1.0")
+    #         quality_score = 1.0
+        
+    #     # Map to temperature reading structure
+    #     reading = {
+    #         'id': str(uuid.uuid4()),
+    #         'customer_id': event['customer_id'],
+    #         'facility_id': event['facility_id'],
+    #         'storage_unit_id': event['unit_id'],
+    #         'temperature': temperature,
+    #         'temperature_unit': data.get('temperature_unit', 'C'),
+    #         'recorded_at': timestamp,
+    #         'sensor_id': data.get('sensor_id', ''),
+    #         'quality_score': quality_score,
+    #         'equipment_status': data.get('equipment_status', 'normal'),
+    #         'created_at': datetime.now()
+    #     }
+        
+    #     return reading
+
     def map_temperature_reading(self, event: Dict[str, Any]) -> Dict[str, Any]:
         """
         Map a data event to a temperature reading structure
@@ -225,16 +289,17 @@ class DataProcessor:
             logger.warning(f"Invalid temperature value: {data.get('temperature')}, using 0.0")
             temperature = 0.0
             
-        # Safely convert quality score to float
+        # Safely convert quality score to INTEGER, not float
         try:
             quality_score_value = data.get('quality_score')
             if quality_score_value is None or quality_score_value == '':
-                quality_score = 1.0
+                quality_score = 1  # Integer, not 1.0
             else:
-                quality_score = float(quality_score_value)
+                # Convert to integer, not float
+                quality_score = int(float(quality_score_value))  # Convert to float first if it's a string, then to int
         except (ValueError, TypeError):
-            logger.warning(f"Invalid quality score value: {data.get('quality_score')}, using 1.0")
-            quality_score = 1.0
+            logger.warning(f"Invalid quality score value: {data.get('quality_score')}, using 1")
+            quality_score = 1  # Integer, not 1.0
         
         # Map to temperature reading structure
         reading = {
@@ -246,7 +311,7 @@ class DataProcessor:
             'temperature_unit': data.get('temperature_unit', 'C'),
             'recorded_at': timestamp,
             'sensor_id': data.get('sensor_id', ''),
-            'quality_score': quality_score,
+            'quality_score': quality_score,  # This will now be an integer
             'equipment_status': data.get('equipment_status', 'normal'),
             'created_at': datetime.now()
         }

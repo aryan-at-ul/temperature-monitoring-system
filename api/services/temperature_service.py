@@ -393,6 +393,10 @@ class TemperatureService:
         
         return stats
 
+
+
+
+
     @classmethod
     async def get_aggregation(cls, customer_id: UUID, aggregation_params):
         """
