@@ -1,0 +1,527 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Customer Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Customer Details</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.customers') }}">Customers</a></li>
+        <li class="breadcrumb-item active">{{ customer.name }}</li>
+    </ol>
+    
+    <div class="row">
+        <!-- Customer Information Card -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user me-1"></i>
+                    Customer Information
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Customer Code:</div>
+                        <div class="col-md-8">{{ customer.customer_code }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Name:</div>
+                        <div class="col-md-8">{{ customer.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Data Sharing Method:</div>
+                        <div class="col-md-8">{{ customer.data_sharing_method }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Data Frequency:</div>
+                        <div class="col-md-8">{{ customer.data_frequency_seconds }} seconds</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">API URL:</div>
+                        <div class="col-md-8">
+                            {% if customer.api_url %}
+                                {{ customer.api_url }}
+                            {% else %}
+                                <span class="text-muted">None</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            {% if customer.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Created At:</div>
+                        <div class="col-md-8">{{ customer.created_at|datetime }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Last Updated:</div>
+                        <div class="col-md-8">{{ customer.updated_at|datetime }}</div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editCustomerModal">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeactivateModal">
+                            {% if customer.is_active %}
+                                <i class="fas fa-ban"></i> Deactivate
+                            {% else %}
+                                <i class="fas fa-check"></i> Activate
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Customer Statistics Card -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    Customer Statistics
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>{{ customer.facility_count }}</h3>
+                                    <p class="mb-0">Facilities</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>{{ customer.unit_count }}</h3>
+                                    <p class="mb-0">Storage Units</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>{{ customer.reading_count }}</h3>
+                                    <p class="mb-0">Total Readings</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>{{ customer.active_readings_count }}</h3>
+                                    <p class="mb-0">Active Readings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body text-center">
+                                    <h6>Last Reading Time</h6>
+                                    <h4>
+                                        {% if customer.last_reading_time %}
+                                            {{ customer.last_reading_time|datetime }}
+                                        {% else %}
+                                            Never
+                                        {% endif %}
+                                    </h4>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- API Tokens Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-key me-1"></i>
+                    API Tokens
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createTokenModal">
+                    <i class="fas fa-plus"></i> Create Token
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if tokens %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="tokensTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Permissions</th>
+                            <th>Rate Limit</th>
+                            <th>Created</th>
+                            <th>Last Used</th>
+                            <th>Expires</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for token in tokens %}
+                        <tr>
+                            <td>{{ token.token_name }}</td>
+                            <td>
+                                {% for permission in token.permissions %}
+                                    <span class="badge bg-info">{{ permission }}</span>
+                                {% endfor %}
+                            </td>
+                            <td>{{ token.rate_limit_per_hour }} / hour</td>
+                            <td>{{ token.created_at|datetime }}</td>
+                            <td>
+                                {% if token.last_used %}
+                                    {{ token.last_used|datetime }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if token.expires_at %}
+                                    {{ token.expires_at|datetime }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if token.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Revoked</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-danger revoke-token" data-token-id="{{ token.id }}">
+                                    <i class="fas fa-ban"></i> Revoke
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No tokens found for this customer.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Customer Facilities Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-building me-1"></i>
+                    Facilities
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createFacilityModal">
+                    <i class="fas fa-plus"></i> Add Facility
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if facilities %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="facilitiesTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Location</th>
+                            <th>Storage Units</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for facility in facilities %}
+                        <tr>
+                            <td>{{ facility.facility_code }}</td>
+                            <td>{{ facility.name }}</td>
+                            <td>{{ facility.city }}, {{ facility.country }}</td>
+                            <td>{{ facility.unit_count }}</td>
+                            <td>{{ facility.created_at|datetime }}</td>
+                            <td>
+                                <a href="{{ url_for('admin.facility_details', facility_id=facility.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No facilities found for this customer.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Customer Modal -->
+<div class="modal fade" id="editCustomerModal" tabindex="-1" aria-labelledby="editCustomerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editCustomerModalLabel">Edit Customer</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editCustomerForm" action="#" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="customerName" class="form-label">Customer Name</label>
+                        <input type="text" class="form-control" id="customerName" name="name" value="{{ customer.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dataSharingMethod" class="form-label">Data Sharing Method</label>
+                        <select class="form-select" id="dataSharingMethod" name="data_sharing_method">
+                            <option value="api" {% if customer.data_sharing_method == 'api' %}selected{% endif %}>API</option>
+                            <option value="csv" {% if customer.data_sharing_method == 'csv' %}selected{% endif %}>CSV</option>
+                            <option value="sftp" {% if customer.data_sharing_method == 'sftp' %}selected{% endif %}>SFTP</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dataFrequency" class="form-label">Data Frequency (seconds)</label>
+                        <input type="number" class="form-control" id="dataFrequency" name="data_frequency_seconds" value="{{ customer.data_frequency_seconds }}" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="apiUrl" class="form-label">API URL</label>
+                        <input type="text" class="form-control" id="apiUrl" name="api_url" value="{{ customer.api_url }}">
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" {% if customer.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="isActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Token Modal -->
+<div class="modal fade" id="createTokenModal" tabindex="-1" aria-labelledby="createTokenModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createTokenModalLabel">Create API Token</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createTokenForm" action="#" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="tokenName" class="form-label">Token Name</label>
+                        <input type="text" class="form-control" id="tokenName" name="token_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Permissions</label>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="permRead" name="permissions[]" value="read" checked>
+                            <label class="form-check-label" for="permRead">
+                                Read (GET)
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="permWrite" name="permissions[]" value="write">
+                            <label class="form-check-label" for="permWrite">
+                                Write (POST, PUT, DELETE)
+                            </label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="rateLimit" class="form-label">Rate Limit (requests per hour)</label>
+                        <input type="number" class="form-control" id="rateLimit" name="rate_limit_per_hour" value="100" min="1" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="expirationDate" class="form-label">Expiration Date (optional)</label>
+                        <input type="date" class="form-control" id="expirationDate" name="expiration_date">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Token</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Deactivate Modal -->
+<div class="modal fade" id="confirmDeactivateModal" tabindex="-1" aria-labelledby="confirmDeactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeactivateModalLabel">
+                    {% if customer.is_active %}
+                        Confirm Deactivation
+                    {% else %}
+                        Confirm Activation
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if customer.is_active %}
+                    <p>Are you sure you want to deactivate customer "{{ customer.name }}"?</p>
+                    <p>This will prevent any data ingestion and API access for this customer.</p>
+                {% else %}
+                    <p>Are you sure you want to activate customer "{{ customer.name }}"?</p>
+                    <p>This will enable data ingestion and API access for this customer.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="toggleActiveForm" action="#" method="POST">
+                    <input type="hidden" name="is_active" value="{{ not customer.is_active }}">
+                    <button type="submit" class="btn btn-danger">
+                        {% if customer.is_active %}
+                            Deactivate
+                        {% else %}
+                            Activate
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables
+        $('#tokensTable').DataTable({
+            responsive: true,
+            order: [[3, 'desc']] // Sort by created date
+        });
+        
+        $('#facilitiesTable').DataTable({
+            responsive: true,
+            order: [[0, 'asc']] // Sort by facility code
+        });
+        
+        // Form submission for edit customer
+        $('#editCustomerForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.customer_details", customer_id=customer.id) }}',
+                method: 'PUT',
+                data: formData,
+                success: function(response) {
+                    $('#editCustomerModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error updating customer: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Form submission for create token
+        $('#createTokenForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            // Collect permissions from checkboxes
+            const permissions = [];
+            $('input[name="permissions[]"]:checked').each(function() {
+                permissions.push($(this).val());
+            });
+            
+            const formData = {
+                token_name: $('#tokenName').val(),
+                permissions: permissions,
+                rate_limit_per_hour: $('#rateLimit').val(),
+                expiration_date: $('#expirationDate').val() || null
+            };
+            
+            $.ajax({
+                url: '{{ url_for("admin.create_customer_token", customer_id=customer.id) }}',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    $('#createTokenModal').modal('hide');
+                    
+                    // Show the token value (only shown once)
+                    if (response && response.token) {
+                        alert('Token created successfully! Token value (copy this, it will only be shown once):\n\n' + response.token);
+                    }
+                    
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error creating token: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Toggle active status
+        $('#toggleActiveForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.customer_details", customer_id=customer.id) }}',
+                method: 'PUT',
+                data: formData,
+                success: function(response) {
+                    $('#confirmDeactivateModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error updating customer status: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Revoke token
+        $('.revoke-token').on('click', function() {
+            const tokenId = $(this).data('token-id');
+            if (confirm('Are you sure you want to revoke this token? This action cannot be undone.')) {
+                $.ajax({
+                    url: '{{ url_for("admin.customer_details", customer_id=customer.id) }}' + '/tokens/' + tokenId,
+                    method: 'DELETE',
+                    success: function() {
+                        // Reload page to see changes
+                        location.reload();
+                    },
+                    error: function(xhr) {
+                        alert('Error revoking token: ' + xhr.responseJSON.detail);
+                    }
+                });
+            }
+        });
+    });
+</script>
+{% endblock %}

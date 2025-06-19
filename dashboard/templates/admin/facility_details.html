@@ -1,0 +1,522 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Facility Details{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Facility Details</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.facilities') }}">Facilities</a></li>
+        <li class="breadcrumb-item active">{{ facility.name }}</li>
+    </ol>
+    
+    <div class="row">
+        <!-- Facility Information Card -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-building me-1"></i>
+                    Facility Information
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Facility Code:</div>
+                        <div class="col-md-8">{{ facility.facility_code }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Name:</div>
+                        <div class="col-md-8">{{ facility.name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Customer:</div>
+                        <div class="col-md-8">
+                            {% if customer %}
+                                <a href="{{ url_for('admin.customer_details', customer_id=customer.id) }}">
+                                    {{ customer.name }}
+                                </a>
+                            {% else %}
+                                Unknown Customer
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Location:</div>
+                        <div class="col-md-8">{{ facility.city }}, {{ facility.country }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            {% if facility.is_active %}
+                                <span class="badge bg-success">Active</span>
+                            {% else %}
+                                <span class="badge bg-danger">Inactive</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Created At:</div>
+                        <div class="col-md-8">{{ facility.created_at|datetime }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Last Updated:</div>
+                        <div class="col-md-8">{{ facility.updated_at|datetime }}</div>
+                    </div>
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#editFacilityModal">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
+                        <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#confirmDeactivateModal">
+                            {% if facility.is_active %}
+                                <i class="fas fa-ban"></i> Deactivate
+                            {% else %}
+                                <i class="fas fa-check"></i> Activate
+                            {% endif %}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Facility Statistics Card -->
+        <div class="col-xl-6">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-chart-bar me-1"></i>
+                    Facility Statistics
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>{{ units|length }}</h3>
+                                    <p class="mb-0">Storage Units</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card mb-3">
+                                <div class="card-body text-center">
+                                    <h3>
+                                        {% if readings %}
+                                            {{ readings|length }}
+                                        {% else %}
+                                            0
+                                        {% endif %}
+                                    </h3>
+                                    <p class="mb-0">Recent Readings</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h6 class="text-center mb-3">Temperature Range</h6>
+                                    <div class="d-flex justify-content-between">
+                                        <div class="text-center">
+                                            <small>Min</small>
+                                            <h5>
+                                                {% if readings %}
+                                                    {% set min_temp = readings|map(attribute='temperature')|min %}
+                                                    {{ "%.1f"|format(min_temp) }}°
+                                                {% else %}
+                                                    --°
+                                                {% endif %}
+                                            </h5>
+                                        </div>
+                                        <div class="text-center">
+                                            <small>Avg</small>
+                                            <h5>
+                                                {% if readings %}
+                                                    {% set avg_temp = readings|map(attribute='temperature')|sum / readings|length %}
+                                                    {{ "%.1f"|format(avg_temp) }}°
+                                                {% else %}
+                                                    --°
+                                                {% endif %}
+                                            </h5>
+                                        </div>
+                                        <div class="text-center">
+                                            <small>Max</small>
+                                            <h5>
+                                                {% if readings %}
+                                                    {% set max_temp = readings|map(attribute='temperature')|max %}
+                                                    {{ "%.1f"|format(max_temp) }}°
+                                                {% else %}
+                                                    --°
+                                                {% endif %}
+                                            </h5>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Storage Units Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-box me-1"></i>
+                    Storage Units
+                </div>
+                <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#createUnitModal">
+                    <i class="fas fa-plus"></i> Add Unit
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if units %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="unitsTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Size</th>
+                            <th>Set Temp</th>
+                            <th>Equipment Type</th>
+                            <th>Last Reading</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for unit in units %}
+                        <tr>
+                            <td>{{ unit.unit_code }}</td>
+                            <td>{{ unit.name }}</td>
+                            <td>{{ unit.size_value }} {{ unit.size_unit }}</td>
+                            <td>{{ unit.set_temperature }}°{{ unit.temperature_unit }}</td>
+                            <td>{{ unit.equipment_type }}</td>
+                            <td>
+                                {% if unit.last_reading_time %}
+                                    {{ unit.last_reading_time|datetime }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if unit.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inactive</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" class="btn btn-sm btn-primary view-unit" data-unit-id="{{ unit.id }}">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No storage units found for this facility.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Recent Temperature Readings Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-thermometer-half me-1"></i>
+            Recent Temperature Readings
+        </div>
+        <div class="card-body">
+            {% if readings %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="readingsTable">
+                    <thead>
+                        <tr>
+                            <th>Timestamp</th>
+                            <th>Unit</th>
+                            <th>Temperature</th>
+                            <th>Equipment Status</th>
+                            <th>Quality Score</th>
+                            <th>Sensor ID</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for reading in readings %}
+                        <tr>
+                            <td>{{ reading.recorded_at|datetime }}</td>
+                            <td>
+                                {% for unit in units %}
+                                    {% if unit.id == reading.storage_unit_id %}
+                                        {{ unit.name }}
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            <td>{{ reading.temperature }}°{{ reading.temperature_unit }}</td>
+                            <td>
+                                {% if reading.equipment_status == 'normal' %}
+                                    <span class="badge bg-success">Normal</span>
+                                {% elif reading.equipment_status == 'warning' %}
+                                    <span class="badge bg-warning">Warning</span>
+                                {% elif reading.equipment_status == 'critical' %}
+                                    <span class="badge bg-danger">Critical</span>
+                                {% elif reading.equipment_status == 'error' %}
+                                    <span class="badge bg-secondary">Error</span>
+                                {% else %}
+                                    <span class="badge bg-info">{{ reading.equipment_status }}</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ reading.quality_score }}</td>
+                            <td>{{ reading.sensor_id }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No temperature readings found for this facility.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Edit Facility Modal -->
+<div class="modal fade" id="editFacilityModal" tabindex="-1" aria-labelledby="editFacilityModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editFacilityModalLabel">Edit Facility</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editFacilityForm" action="#" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="facilityName" class="form-label">Facility Name</label>
+                        <input type="text" class="form-control" id="facilityName" name="name" value="{{ facility.name }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="facilityCity" class="form-label">City</label>
+                        <input type="text" class="form-control" id="facilityCity" name="city" value="{{ facility.city }}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="facilityCountry" class="form-label">Country</label>
+                        <input type="text" class="form-control" id="facilityCountry" name="country" value="{{ facility.country }}" required>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="isActive" name="is_active" {% if facility.is_active %}checked{% endif %}>
+                        <label class="form-check-label" for="isActive">
+                            Active
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Create Unit Modal -->
+<div class="modal fade" id="createUnitModal" tabindex="-1" aria-labelledby="createUnitModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="createUnitModalLabel">Add Storage Unit</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="createUnitForm" action="#" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="unitCode" class="form-label">Unit Code</label>
+                        <input type="text" class="form-control" id="unitCode" name="unit_code" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unitName" class="form-label">Unit Name</label>
+                        <input type="text" class="form-control" id="unitName" name="name" required>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="sizeValue" class="form-label">Size</label>
+                            <input type="number" class="form-control" id="sizeValue" name="size_value" min="0" step="0.01" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="sizeUnit" class="form-label">Unit</label>
+                            <select class="form-select" id="sizeUnit" name="size_unit">
+                                <option value="sqm">sqm</option>
+                                <option value="sqft">sqft</option>
+                                <option value="m2">m²</option>
+                                <option value="ft2">ft²</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="setTemperature" class="form-label">Set Temperature</label>
+                            <input type="number" class="form-control" id="setTemperature" name="set_temperature" step="0.1" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="temperatureUnit" class="form-label">Unit</label>
+                            <select class="form-select" id="temperatureUnit" name="temperature_unit">
+                                <option value="C">°C</option>
+                                <option value="F">°F</option>
+                                <option value="K">K</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="equipmentType" class="form-label">Equipment Type</label>
+                        <select class="form-select" id="equipmentType" name="equipment_type">
+                            <option value="freezer">Freezer</option>
+                            <option value="refrigerator">Refrigerator</option>
+                            <option value="cold_room">Cold Room</option>
+                            <option value="blast_chiller">Blast Chiller</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Unit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Confirm Deactivate Modal -->
+<div class="modal fade" id="confirmDeactivateModal" tabindex="-1" aria-labelledby="confirmDeactivateModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeactivateModalLabel">
+                    {% if facility.is_active %}
+                        Confirm Deactivation
+                    {% else %}
+                        Confirm Activation
+                    {% endif %}
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                {% if facility.is_active %}
+                    <p>Are you sure you want to deactivate facility "{{ facility.name }}"?</p>
+                    <p>This will prevent data collection from all units in this facility.</p>
+                {% else %}
+                    <p>Are you sure you want to activate facility "{{ facility.name }}"?</p>
+                    <p>This will enable data collection from all units in this facility.</p>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="toggleActiveForm" action="#" method="POST">
+                    <input type="hidden" name="is_active" value="{{ not facility.is_active }}">
+                    <button type="submit" class="btn btn-danger">
+                        {% if facility.is_active %}
+                            Deactivate
+                        {% else %}
+                            Activate
+                        {% endif %}
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTables
+        $('#unitsTable').DataTable({
+            responsive: true,
+            order: [[0, 'asc']] // Sort by unit code
+        });
+        
+        $('#readingsTable').DataTable({
+            responsive: true,
+            order: [[0, 'desc']], // Sort by timestamp (newest first)
+            pageLength: 10
+        });
+        
+        // Form submission for edit facility
+        $('#editFacilityForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.facility_details", facility_id=facility.id) }}',
+                method: 'PUT',
+                data: formData,
+                success: function(response) {
+                    $('#editFacilityModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error updating facility: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Form submission for create unit
+        $('#createUnitForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.facility_details", facility_id=facility.id) }}/units',
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#createUnitModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error creating unit: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Toggle active status
+        $('#toggleActiveForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.facility_details", facility_id=facility.id) }}',
+                method: 'PUT',
+                data: formData,
+                success: function(response) {
+                    $('#confirmDeactivateModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error updating facility status: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // View unit details
+        $('.view-unit').on('click', function(e) {
+            e.preventDefault();
+            const unitId = $(this).data('unit-id');
+            // Redirect to unit details page
+            window.location.href = '/admin/unit/' + unitId;
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,435 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Analytics{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">System Analytics</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Analytics</li>
+    </ol>
+    
+    <!-- Temperature Overview Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-thermometer-half me-1"></i>
+            Temperature Overview
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="stat-card text-center p-3">
+                        <h6>Average Temperature</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.avg_temperature is defined %}
+                                {{ "%.1f"|format(temp_summary.avg_temperature) }}°{{ temp_summary.temperature_unit|default('C') }}
+                            {% else %}
+                                --°C
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center p-3">
+                        <h6>Min Temperature</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.min_temperature is defined %}
+                                {{ "%.1f"|format(temp_summary.min_temperature) }}°{{ temp_summary.temperature_unit|default('C') }}
+                            {% else %}
+                                --°C
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="stat-card text-center p-3">
+                        <h6>Max Temperature</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.max_temperature is defined %}
+                                {{ "%.1f"|format(temp_summary.max_temperature) }}°{{ temp_summary.temperature_unit|default('C') }}
+                            {% else %}
+                                --°C
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <span class="badge bg-info">
+                    Total Readings: 
+                    {% if temp_summary and temp_summary.total_readings is defined %}
+                        {{ temp_summary.total_readings|default(0) }}
+                    {% else %}
+                        0
+                    {% endif %}
+                </span>
+                <span class="badge bg-secondary">
+                    Time Range: 
+                    {% if temp_summary and temp_summary.time_range_start is defined %}
+                        {{ temp_summary.time_range_start|default('')|datetime }}
+                    {% else %}
+                        --
+                    {% endif %}
+                    to 
+                    {% if temp_summary and temp_summary.time_range_end is defined %}
+                        {{ temp_summary.time_range_end|default('')|datetime }}
+                    {% else %}
+                        --
+                    {% endif %}
+                </span>
+            </div>
+            
+            <!-- Temperature chart -->
+            <div class="mt-4">
+                <canvas id="temperatureChart" width="100%" height="50"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Equipment Status Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-chart-pie me-1"></i>
+            Equipment Status
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="status-card normal-status text-center p-3">
+                        <h6>Normal</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.normal_count is defined and temp_summary.reading_count is defined and temp_summary.reading_count > 0 %}
+                                {{ temp_summary.normal_count }}
+                                ({{ (temp_summary.normal_count / temp_summary.reading_count * 100)|int }}%)
+                            {% else %}
+                                0 (0%)
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card warning-status text-center p-3">
+                        <h6>Warning</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.warning_count is defined and temp_summary.reading_count is defined and temp_summary.reading_count > 0 %}
+                                {{ temp_summary.warning_count }}
+                                ({{ (temp_summary.warning_count / temp_summary.reading_count * 100)|int }}%)
+                            {% else %}
+                                0 (0%)
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card critical-status text-center p-3">
+                        <h6>Critical</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.critical_count is defined and temp_summary.reading_count is defined and temp_summary.reading_count > 0 %}
+                                {{ temp_summary.critical_count }}
+                                ({{ (temp_summary.critical_count / temp_summary.reading_count * 100)|int }}%)
+                            {% else %}
+                                0 (0%)
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="status-card error-status text-center p-3">
+                        <h6>Error</h6>
+                        <h3>
+                            {% if temp_summary and temp_summary.error_count is defined and temp_summary.reading_count is defined and temp_summary.reading_count > 0 %}
+                                {{ temp_summary.error_count }}
+                                ({{ (temp_summary.error_count / temp_summary.reading_count * 100)|int }}%)
+                            {% else %}
+                                0 (0%)
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Status distribution chart -->
+            <div class="mt-4">
+                <canvas id="statusChart" width="100%" height="50"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Customer Performance Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-building me-1"></i>
+            Customer Performance
+        </div>
+        <div class="card-body">
+            {% if customers %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="customerPerformanceTable">
+                    <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Reading Count</th>
+                            <th>Avg Temperature</th>
+                            <th>Min Temperature</th>
+                            <th>Max Temperature</th>
+                            <th>Normal %</th>
+                            <th>Warning %</th>
+                            <th>Critical %</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% if temp_summary and temp_summary.by_customer %}
+                            {% for customer_data in temp_summary.by_customer %}
+                                <tr>
+                                    <td>{{ customer_data.customer_code }}</td>
+                                    <td>{{ customer_data.reading_count }}</td>
+                                    <td>{{ "%.1f"|format(customer_data.avg_temperature) }}°</td>
+                                    <td>{{ "%.1f"|format(customer_data.min_temperature) }}°</td>
+                                    <td>{{ "%.1f"|format(customer_data.max_temperature) }}°</td>
+                                    <td>
+                                        {% if customer_data.normal_count is defined and customer_data.reading_count > 0 %}
+                                            {{ (customer_data.normal_count / customer_data.reading_count * 100)|int }}%
+                                        {% else %}
+                                            100%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if customer_data.warning_count is defined and customer_data.reading_count > 0 %}
+                                            {{ (customer_data.warning_count / customer_data.reading_count * 100)|int }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if customer_data.critical_count is defined and customer_data.reading_count > 0 %}
+                                            {{ (customer_data.critical_count / customer_data.reading_count * 100)|int }}%
+                                        {% else %}
+                                            0%
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No customer data available.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Data Ingestion Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-database me-1"></i>
+            Data Ingestion Summary
+        </div>
+        <div class="card-body">
+            {% if ingestion_logs %}
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center p-3">
+                        <h6>Success Rate</h6>
+                        <h3>
+                            {% set success_count = ingestion_logs|selectattr('status', 'equalto', 'success')|list|length %}
+                            {% if ingestion_logs|length > 0 %}
+                                {{ (success_count / ingestion_logs|length * 100)|int }}%
+                            {% else %}
+                                0%
+                            {% endif %}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center p-3">
+                        <h6>Total Records</h6>
+                        <h3>
+                            {% set total_records = 0 %}
+                            {% for log in ingestion_logs %}
+                                {% if log.status == 'success' and log.records_processed is defined %}
+                                    {% set total_records = total_records + log.records_processed %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ total_records }}
+                        </h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center p-3">
+                        <h6>Successful Jobs</h6>
+                        <h3>{{ success_count }}</h3>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center p-3">
+                        <h6>Failed Jobs</h6>
+                        <h3>{{ ingestion_logs|selectattr('status', 'equalto', 'failure')|list|length }}</h3>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="chart-container mt-4">
+                <canvas id="ingestionChart" width="100%" height="50"></canvas>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No ingestion logs available.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#customerPerformanceTable').DataTable({
+            responsive: true,
+            order: [[1, 'desc']] // Sort by reading count desc
+        });
+        
+        // Temperature Chart
+        if ($('#temperatureChart').length) {
+            const tempCtx = document.getElementById('temperatureChart').getContext('2d');
+            const tempChart = new Chart(tempCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Last 7 Days', '6 Days Ago', '5 Days Ago', '4 Days Ago', '3 Days Ago', '2 Days Ago', 'Yesterday', 'Today'],
+                    datasets: [{
+                        label: 'Avg Temperature',
+                        data: [
+                            {% if temp_summary and temp_summary.by_hour %}
+                                {% for hour_data in temp_summary.by_hour %}
+                                    {{ hour_data.avg_temperature }},
+                                {% endfor %}
+                            {% else %}
+                                -10, -9.5, -9.8, -10.2, -9.7, -9.9, -10.1, -9.6
+                            {% endif %}
+                        ],
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        borderWidth: 2,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Temperature Trend'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Status Chart
+        if ($('#statusChart').length) {
+            const statusCtx = document.getElementById('statusChart').getContext('2d');
+            const statusChart = new Chart(statusCtx, {
+                type: 'pie',
+                data: {
+                    labels: ['Normal', 'Warning', 'Critical', 'Error'],
+                    datasets: [{
+                        label: 'Equipment Status',
+                        data: [
+                            {% if temp_summary %}
+                                {{ temp_summary.normal_count|default(100) }},
+                                {{ temp_summary.warning_count|default(0) }},
+                                {{ temp_summary.critical_count|default(0) }},
+                                {{ temp_summary.error_count|default(0) }}
+                            {% else %}
+                                100, 0, 0, 0
+                            {% endif %}
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.6)',
+                            'rgba(255, 193, 7, 0.6)',
+                            'rgba(220, 53, 69, 0.6)',
+                            'rgba(108, 117, 125, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(255, 193, 7, 1)',
+                            'rgba(220, 53, 69, 1)',
+                            'rgba(108, 117, 125, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                        title: {
+                            display: true,
+                            text: 'Equipment Status Distribution'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Ingestion Chart
+        if ($('#ingestionChart').length) {
+            const ingestionCtx = document.getElementById('ingestionChart').getContext('2d');
+            const ingestionChart = new Chart(ingestionCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Success', 'Failure'],
+                    datasets: [{
+                        label: 'Ingestion Jobs',
+                        data: [
+                            {% if ingestion_logs %}
+                                {{ ingestion_logs|selectattr('status', 'equalto', 'success')|list|length }},
+                                {{ ingestion_logs|selectattr('status', 'equalto', 'failure')|list|length }}
+                            {% else %}
+                                0, 0
+                            {% endif %}
+                        ],
+                        backgroundColor: [
+                            'rgba(40, 167, 69, 0.6)',
+                            'rgba(220, 53, 69, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(40, 167, 69, 1)',
+                            'rgba(220, 53, 69, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Ingestion Success vs Failure'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

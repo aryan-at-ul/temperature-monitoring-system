@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - System Configuration{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4">
+    <h1 class="mt-4">System Configuration</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="{{ url_for('admin.dashboard') }}">Dashboard</a></li>
+        <li class="breadcrumb-item active">Configuration</li>
+    </ol>
+    
+    <div class="card mb-4">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <i class="fas fa-cog me-1"></i>
+                    System Settings
+                </div>
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addConfigModal">
+                    <i class="fas fa-plus"></i> Add Setting
+                </button>
+            </div>
+        </div>
+        <div class="card-body">
+            {% if system_config %}
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover" id="configTable">
+                    <thead>
+                        <tr>
+                            <th>Key</th>
+                            <th>Value</th>
+                            <th>Description</th>
+                            <th>Last Updated</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for key, config in system_config.items() %}
+                        <tr>
+                            <td>{{ key }}</td>
+                            <td>{{ config.value }}</td>
+                            <td>{{ config.description }}</td>
+                            <td>{{ config.updated_at|datetime }}</td>
+                            <td>
+                                <button type="button" class="btn btn-sm btn-primary edit-config" data-key="{{ key }}" data-value="{{ config.value }}" data-description="{{ config.description }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="alert alert-info">
+                No configuration settings found.
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- System Information Card -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <i class="fas fa-info-circle me-1"></i>
+            System Information
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>API Version</th>
+                                <td>{{ system_config.get('api_version', {}).get('value', '1.0.0') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Database Version</th>
+                                <td>{{ system_config.get('db_version', {}).get('value', '1.0.0') }}</td>
+                            </tr>
+                            <tr>
+                                <th>Data Retention</th>
+                                <td>{{ system_config.get('data_retention_days', {}).get('value', '365') }} days</td>
+                            </tr>
+                            <tr>
+                                <th>Default Temperature Unit</th>
+                                <td>{{ system_config.get('default_temperature_unit', {}).get('value', 'C') }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Warning Threshold</th>
+                                <td>{{ system_config.get('warning_threshold', {}).get('value', '2') }}°</td>
+                            </tr>
+                            <tr>
+                                <th>Critical Threshold</th>
+                                <td>{{ system_config.get('critical_threshold', {}).get('value', '5') }}°</td>
+                            </tr>
+                            <tr>
+                                <th>Default API Rate Limit</th>
+                                <td>{{ system_config.get('default_rate_limit', {}).get('value', '100') }} per hour</td>
+                            </tr>
+                            <tr>
+                                <th>Maintenance Mode</th>
+                                <td>
+                                    {% if system_config.get('maintenance_mode', {}).get('value') == 'true' %}
+                                        <span class="badge bg-warning">Enabled</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Disabled</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Config Modal -->
+<div class="modal fade" id="addConfigModal" tabindex="-1" aria-labelledby="addConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addConfigModalLabel">Add Configuration Setting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="addConfigForm" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="configKey" class="form-label">Key</label>
+                        <input type="text" class="form-control" id="configKey" name="key" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="configValue" class="form-label">Value</label>
+                        <input type="text" class="form-control" id="configValue" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="configDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="configDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Setting</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Config Modal -->
+<div class="modal fade" id="editConfigModal" tabindex="-1" aria-labelledby="editConfigModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editConfigModalLabel">Edit Configuration Setting</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="editConfigForm" method="POST">
+                <div class="modal-body">
+                    <input type="hidden" id="editConfigKey" name="key">
+                    <div class="mb-3">
+                        <label for="editConfigValue" class="form-label">Value</label>
+                        <input type="text" class="form-control" id="editConfigValue" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editConfigDescription" class="form-label">Description</label>
+                        <textarea class="form-control" id="editConfigDescription" name="description" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    $(document).ready(function() {
+        // Initialize DataTable
+        $('#configTable').DataTable({
+            responsive: true,
+            order: [[0, 'asc']]
+        });
+        
+        // Edit config button click
+        $('.edit-config').on('click', function() {
+            const key = $(this).data('key');
+            const value = $(this).data('value');
+            const description = $(this).data('description');
+            
+            $('#editConfigKey').val(key);
+            $('#editConfigValue').val(value);
+            $('#editConfigDescription').val(description);
+            
+            $('#editConfigModal').modal('show');
+        });
+        
+        // Form submission for add config
+        $('#addConfigForm').on('submit', function(e) {
+            e.preventDefault();
+            const formData = $(this).serialize();
+            
+            $.ajax({
+                url: '{{ url_for("admin.config") }}',
+                method: 'POST',
+                data: formData,
+                success: function(response) {
+                    $('#addConfigModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error adding configuration: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+        
+        // Form submission for edit config
+        $('#editConfigForm').on('submit', function(e) {
+            e.preventDefault();
+            const key = $('#editConfigKey').val();
+            const value = $('#editConfigValue').val();
+            const description = $('#editConfigDescription').val();
+            
+            $.ajax({
+                url: '{{ url_for("admin.config") }}',
+                method: 'PUT',
+                data: {
+                    key: key,
+                    value: value,
+                    description: description
+                },
+                success: function(response) {
+                    $('#editConfigModal').modal('hide');
+                    // Reload page to see changes
+                    location.reload();
+                },
+                error: function(xhr) {
+                    alert('Error updating configuration: ' + xhr.responseJSON.detail);
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
