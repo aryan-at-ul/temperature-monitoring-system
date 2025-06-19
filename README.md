@@ -263,12 +263,12 @@ PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -c "SELECT 1;"
 
 ## Development Notes
 
-This proof-of-concept demonstrates enterprise-grade patterns including:
-- Microservices architecture with service independence
-- Message queue-based data processing
-- Token-based API authentication
-- Comprehensive test coverage
-- CLI tools for system management
-- Real-time monitoring capabilities
+This proof-of-concept demonstrates key backend patterns including:
+- Modular service design with independent components
+- Queue-based data processing pipeline
+- Basic API authentication with tokens
+- Test suite for endpoint validation
+- Command-line tools for data management
+- Simple monitoring and status checking
 
-Each Python module is designed to run as an independent service, enabling deployment flexibility and scalability for production environments.
+Each Python module can be run as a separate process, showing how the system could be adapted for distributed deployment if needed.
