@@ -82,7 +82,7 @@ GRANT ALL PRIVILEGES ON DATABASE temperature_db TO tm_user;
 # Initialize database schema
 PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -f database/schema.sql
 
-# Load sample data (optional)
+# Load sample data (To replicate exact Dev env)
 PGPASSWORD=tm_pass psql -U tm_user -h localhost -d temperature_db -f temperature_db_dump.sql
 ```
 
