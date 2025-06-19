@@ -17,13 +17,13 @@ def test_database_functions():
     db = DatabaseConnection()
     
     try:
-        # Test temperature conversion
+        
         print("\n🌡️  Testing temperature conversion...")
         conversions = [
             (32, 'F', 'C', 0),
             (100, 'C', 'F', 212),
             (273.15, 'K', 'C', 0),
-            (-40, 'F', 'C', -40)  # Special case where F and C are equal
+            (-40, 'F', 'C', -40) 
         ]
         
         for temp, from_unit, to_unit, expected in conversions:
@@ -32,12 +32,12 @@ def test_database_functions():
             status = "✅" if abs(converted - expected) < 0.1 else "❌"
             print(f"  {status} {temp}°{from_unit} → {converted:.1f}°{to_unit} (expected: {expected})")
         
-        # Test area conversion
+        
         print("\n📏 Testing area conversion...")
         area_conversions = [
             (10.764, 'sqft', 'sqm', 1.0),
             (1, 'sqm', 'sqft', 10.764),
-            (100, 'sqm', 'sqm', 100)  # Same unit
+            (100, 'sqm', 'sqm', 100)  
         ]
         
         for area, from_unit, to_unit, expected in area_conversions:
@@ -46,7 +46,7 @@ def test_database_functions():
             status = "✅" if abs(converted - expected) < 0.1 else "❌"
             print(f"  {status} {area} {from_unit} → {converted:.1f} {to_unit} (expected: {expected})")
         
-        # Test latest readings view
+     
         print("\n📊 Testing latest temperature readings view...")
         latest = db.execute_query("""
             SELECT customer_code, unit_code, temperature, temperature_unit, recorded_at

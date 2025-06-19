@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-# Add project root to path
+
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -26,7 +26,7 @@ def verify_existing_database():
     db = DatabaseConnection()
     
     try:
-        # 2. Check existing tables
+        
         print("\n2️⃣ Checking existing tables...")
         tables = db.execute_query("""
             SELECT table_name 
@@ -50,12 +50,12 @@ def verify_existing_database():
             status = "✅" if table in expected_tables else "📋"
             print(f"  {status} {table}")
         
-        # Count partition tables
+       
         partition_count = len([t for t in table_names if t.startswith('temperature_readings_history')])
         if partition_count > 0:
             print(f"  📅 {partition_count} history partitions")
         
-        # 3. Check views
+        
         print("\n3️⃣ Checking views...")
         views = db.execute_query("""
             SELECT table_name 
@@ -71,10 +71,10 @@ def verify_existing_database():
             status = "✅" if view in view_names else "❌"
             print(f"  {status} {view}")
         
-        # 4. Check data
+       
         print("\n4️⃣ Checking existing data...")
         
-        # Count existing records
+        
         customer_count = db.execute_query("SELECT COUNT(*) as count FROM customers")[0]['count']
         facility_count = db.execute_query("SELECT COUNT(*) as count FROM facilities")[0]['count']
         unit_count = db.execute_query("SELECT COUNT(*) as count FROM storage_units")[0]['count']
@@ -86,10 +86,10 @@ def verify_existing_database():
         print(f"  ❄️  Storage Units: {unit_count}")
         print(f"  🌡️  Temperature Readings: {reading_count}")
         
-        # 5. Test functions if they exist
+        
         print("\n5️⃣ Testing database functions...")
         try:
-            # Test temperature conversion function
+            
             result = db.execute_query("SELECT convert_temperature(32, 'F', 'C') as temp")
             if result:
                 celsius_temp = float(result[0]['temp'])
@@ -100,7 +100,7 @@ def verify_existing_database():
             print(f"  ❓ Temperature conversion function not available: {e}")
         
         try:
-            # Test area conversion function
+           
             result = db.execute_query("SELECT convert_area(10.764, 'sqft', 'sqm') as area")
             if result:
                 sqm_area = float(result[0]['area'])
@@ -110,7 +110,7 @@ def verify_existing_database():
         except Exception as e:
             print(f"  ❓ Area conversion function not available: {e}")
         
-        # 6. Summary
+       
         print("\n" + "=" * 45)
         print("📋 VERIFICATION SUMMARY")
         print("=" * 45)

@@ -1,4 +1,4 @@
-# scripts/create_sample_tokens.py (Fixed for JSONB)
+# scripts/create_sample_tokens.py
 #!/usr/bin/env python3
 import sys
 import json
@@ -21,8 +21,7 @@ def create_simple_tokens():
     
     try:
         db = DatabaseConnection()
-        
-        # Get all customers
+       
         customers = db.execute_query("SELECT customer_code, id FROM customers WHERE is_active = TRUE ORDER BY customer_code")
         
         if not customers:
@@ -38,16 +37,16 @@ def create_simple_tokens():
             customer_db_id = customer['id']
             
             try:
-                # Create simple read token
+            
                 read_token = f"read_{customer_id}_{''.join([str(ord(c)) for c in customer_id])}_token_2025"
                 write_token = f"write_{customer_id}_{''.join([str(ord(c)) for c in customer_id])}_token_2025"
                 
-                # Store in database with proper JSONB formatting
+           
                 import hashlib
                 read_hash = hashlib.sha256(read_token.encode()).hexdigest()
                 write_hash = hashlib.sha256(write_token.encode()).hexdigest()
                 
-                # Insert read token with JSONB cast
+        
                 db.execute_command("""
                     INSERT INTO customer_tokens 
                     (customer_id, token_hash, token_name, permissions, is_active)
@@ -56,7 +55,7 @@ def create_simple_tokens():
                 """, (customer_db_id, read_hash, f"Read token for {customer_id}", 
                      json.dumps(["read"]), True))
                 
-                # Insert write token with JSONB cast
+                
                 db.execute_command("""
                     INSERT INTO customer_tokens 
                     (customer_id, token_hash, token_name, permissions, is_active)
@@ -77,13 +76,13 @@ def create_simple_tokens():
                 # Rollback the transaction and continue
                 db.connection.rollback()
         
-        # Create admin token (using customer A with admin permissions)
+    
         if 'A' in tokens:
             try:
                 admin_token = f"admin_A_{''.join([str(ord(c)) for c in 'A'])}_admin_token_2025"
                 admin_hash = hashlib.sha256(admin_token.encode()).hexdigest()
                 
-                # Get customer A's DB ID
+         
                 customer_a_id = next(c['id'] for c in customers if c['customer_code'] == 'A')
                 
                 db.execute_command("""
@@ -101,14 +100,13 @@ def create_simple_tokens():
                 print(f"❌ Failed to create admin token: {e}")
                 db.connection.rollback()
         
-        # Save tokens to file
+  
         with open("api_tokens.json", "w") as f:
             json.dump(tokens, f, indent=2)
         
         print(f"\n📁 Tokens saved to: api_tokens.json")
         print(f"📋 Created tokens for {len([k for k in tokens.keys() if k != 'admin'])} customers + admin")
-        
-        # Show sample usage
+ 
         if tokens:
             first_customer = next((k for k in tokens.keys() if k != "admin"), None)
             if first_customer:
@@ -126,7 +124,6 @@ def create_simple_tokens():
                     print(f"\n# Test admin endpoint")
                     print(f"curl -H 'Authorization: Bearer {admin_token}' http://localhost:8000/api/v1/admin/customers")
         
-        # Verify tokens in database
         token_count = db.execute_query("SELECT COUNT(*) as count FROM customer_tokens WHERE is_active = TRUE")[0]['count']
         print(f"\n✅ Verification: {token_count} active tokens in database")
         

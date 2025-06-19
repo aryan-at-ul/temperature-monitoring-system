@@ -3,7 +3,7 @@
 import sys
 from pathlib import Path
 
-# Add project root to path
+
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -18,7 +18,7 @@ def verify_import_success():
     db = DatabaseConnection()
     
     try:
-        # 1. Overall statistics
+        
         print("\n📊 OVERALL STATISTICS")
         print("-" * 30)
         
@@ -39,7 +39,7 @@ def verify_import_success():
         print(f"✅ Storage Units: {overall_stats['units']}")
         print(f"✅ Temperature Readings: {overall_stats['readings']}")
         
-        # 2. Customer breakdown (fixed SQL)
+        
         print("\n👥 CUSTOMER BREAKDOWN")
         print("-" * 30)
         
@@ -63,8 +63,7 @@ def verify_import_success():
             method_icon = "📄" if customer['data_sharing_method'] == 'csv' else "🔌"
             print(f"{method_icon} {customer['customer_code']}: {customer['customer_name']} ({customer['data_sharing_method']})")
             print(f"    🏢 {customer['facilities']} facilities | ❄️  {customer['units']} units | 📊 {customer['readings']} readings")
-        
-        # 3. Data sharing method breakdown
+     
         print("\n📋 DATA SHARING METHODS")
         print("-" * 30)
         
@@ -94,7 +93,7 @@ def verify_import_success():
             icon = "📄" if method['data_sharing_method'] == 'csv' else "🔌"
             print(f"{icon} {method['data_sharing_method'].upper()}: {method['customer_count']} customers, {method['total_facilities']} facilities, {method['total_units']} units")
         
-        # 4. Temperature data quality
+    
         print("\n🌡️  TEMPERATURE DATA QUALITY")
         print("-" * 30)
         
@@ -117,11 +116,11 @@ def verify_import_success():
         print(f"📅 Date range: {data_quality['earliest_reading']} to {data_quality['latest_reading']}")
         print(f"📆 Days with data: {data_quality['days_with_data']}")
         
-        # 5. Assignment requirements check
+      
         print("\n📋 ASSIGNMENT REQUIREMENTS CHECK")
         print("-" * 30)
         
-        # Check Customer A
+
         customer_a = db.execute_query("""
             SELECT c.*, COUNT(DISTINCT su.id) as unit_count
             FROM customers c
@@ -137,7 +136,7 @@ def verify_import_success():
         else:
             print("❌ Customer A missing")
         
-        # Check Customer B
+   
         customer_b = db.execute_query("""
             SELECT c.*, COUNT(DISTINCT su.id) as unit_count
             FROM customers c
@@ -153,7 +152,7 @@ def verify_import_success():
         else:
             print("❌ Customer B missing")
         
-        # Check for null values
+
         null_checks = db.execute_query("""
             SELECT 
                 COUNT(CASE WHEN f.name IS NULL THEN 1 END) as null_facility_names,
@@ -170,7 +169,7 @@ def verify_import_success():
         print(f"✅ Null unit names: {null_checks['null_unit_names']}")
         print(f"✅ Null temperatures: {null_checks['null_temperatures']}")
         
-        # Check temperature and size units
+
         temp_units = db.execute_query("""
             SELECT temperature_unit, COUNT(*) as count
             FROM storage_units
@@ -188,7 +187,7 @@ def verify_import_success():
         print(f"✅ Temperature units: {', '.join([f'{u['temperature_unit']}({u['count']})' for u in temp_units])}")
         print(f"✅ Size units: {', '.join([f'{u['size_unit']}({u['count']})' for u in size_units])}")
         
-        # 6. Sample data preview
+    
         print("\n🔍 SAMPLE DATA PREVIEW")
         print("-" * 30)
         

@@ -9,7 +9,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 import sys
 
-# Add project root to path
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -59,18 +58,18 @@ class SimulationDataImporter:
     def _import_customer_hierarchy(self, customer_code, customer_data):
         """Import customer, facilities, and units from your YAML structure"""
         
-        # Extract customer info
+      
         customer_name = f"Customer {customer_code}"
         data_method = customer_data.get('data_sharing_method', 'csv')
         
-        # Get frequency from data_config if available
+     
         data_config = customer_data.get('data_config', {})
         frequency_minutes = data_config.get('api_polling_frequency_minutes', 5)
         frequency_seconds = frequency_minutes * 60
         
         print(f"  📊 Customer: {customer_code} - Method: {data_method} - Frequency: {frequency_seconds}s")
         
-        # Create/update customer
+       
         customer_query = """
         INSERT INTO customers (customer_code, name, data_sharing_method, data_frequency_seconds)
         VALUES (%s, %s, %s, %s)
@@ -90,7 +89,7 @@ class SimulationDataImporter:
         
         customer_id = result[0]['id']
         
-        # Import facilities
+
         facilities = customer_data.get('facilities', [])
         print(f"  🏢 Found {len(facilities)} facilities")
         
@@ -128,7 +127,7 @@ class SimulationDataImporter:
         facility_db_id = result[0]['id']
         self.facilities_created += 1
         
-        # Import storage units
+
         units = facility_data.get('units', [])
         print(f"      ❄️  Found {len(units)} storage units")
         
@@ -221,15 +220,14 @@ class SimulationDataImporter:
         
         with open(json_path, 'r') as f:
             data = json.load(f)
-        
-        # Handle different JSON structures
+       
         readings = []
         
         if 'readings' in data:
-            # Standard format: {"readings": [...]}
+ 
             readings = data['readings']
         elif isinstance(data, list):
-            # Direct array of readings
+ 
             readings = data
         else:
             print(f"  ⚠️  Unknown JSON structure in {json_path}")
@@ -243,24 +241,23 @@ class SimulationDataImporter:
             if reading_data:
                 batch.append(reading_data)
             
-            # Process in batches of 500
+  
             if len(batch) >= 500:
                 self._insert_temperature_batch(batch)
                 batch = []
-        
-        # Process remaining batch
+
         if batch:
             self._insert_temperature_batch(batch)
     
     def _parse_json_reading(self, reading):
         """Parse JSON reading to database format"""
         try:
-            # Parse timestamp
+            
             timestamp_str = reading.get('timestamp', '')
             if not timestamp_str:
                 return None
             
-            # Handle ISO format timestamps
+          
             if timestamp_str.endswith('Z'):
                 recorded_at = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
             elif '+' in timestamp_str or timestamp_str.endswith('UTC'):
@@ -270,7 +267,7 @@ class SimulationDataImporter:
                 if recorded_at.tzinfo is None:
                     recorded_at = recorded_at.replace(tzinfo=timezone.utc)
             
-            # Parse temperature
+         
             temperature = reading.get('temperature')
             if temperature is not None:
                 temperature = float(temperature)
@@ -311,19 +308,19 @@ class SimulationDataImporter:
                 except Exception as e:
                     logger.warning(f"Error parsing row {row_num} in {csv_path}: {e}")
         
-        # Process remaining batch
+
         if batch:
             self._insert_temperature_batch(batch)
     
     def _parse_csv_row(self, row):
         """Parse CSV row to temperature reading data"""
         try:
-            # Parse timestamp
+      
             timestamp_str = row.get('timestamp', '')
             if not timestamp_str:
                 return None
             
-            # Handle different timestamp formats
+     
             try:
                 if 'T' in timestamp_str:
                     recorded_at = datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
@@ -334,7 +331,7 @@ class SimulationDataImporter:
                 logger.warning(f"Invalid timestamp: {timestamp_str}")
                 return None
             
-            # Parse temperature (can be None/empty for equipment failure)
+          
             temperature = None
             temp_str = row.get('temperature', '').strip()
             if temp_str and temp_str.lower() not in ['null', 'none', '', 'nan']:
@@ -362,8 +359,7 @@ class SimulationDataImporter:
         """Insert batch of temperature readings"""
         if not batch:
             return
-        
-        # Resolve IDs for each reading
+
         resolved_batch = []
         for reading in batch:
             ids = self._resolve_ids(reading)
@@ -375,8 +371,7 @@ class SimulationDataImporter:
         
         if not resolved_batch:
             return
-        
-        # Bulk insert
+      
         insert_query = """
         INSERT INTO temperature_readings 
         (customer_id, facility_id, storage_unit_id, temperature, temperature_unit, 
@@ -433,15 +428,14 @@ def main():
     print("=" * 45)
     
     try:
-        # Test database connection
+      
         db = DatabaseConnection()
         db.execute_query("SELECT 1")
         print("✅ Database connection successful")
         
-        # Initialize importer
+    
         importer = SimulationDataImporter(db)
-        
-        # Import customer profiles from YAML
+
         customer_yaml = "simulation/config/generated_customers.yaml"
         if os.path.exists(customer_yaml):
             importer.import_customers_from_yaml(customer_yaml)
@@ -449,26 +443,25 @@ def main():
             print(f"⚠️  No customer YAML found at {customer_yaml}")
             print("Run: python -m simulation.cli generate-customers --count 5")
         
-        # Import CSV data files (for CSV customers)
+        
         csv_dirs = ["data/csv_files", "data/assignment/csv_files"]
         for csv_dir in csv_dirs:
             if os.path.exists(csv_dir):
                 print(f"\n📄 Importing CSV files from {csv_dir}")
                 importer.import_csv_files(csv_dir)
         
-        # Import JSON data files (for API customers)  
+ 
         json_dirs = [
             "data/assignment",
             "data/generated", 
             "data/api_data",
-            "data"  # Check root data directory too
+            "data" 
         ]
         for json_dir in json_dirs:
             if os.path.exists(json_dir):
                 print(f"\n📋 Importing JSON files from {json_dir}")
                 importer.import_json_files(json_dir)
-        
-        # Also check for API customer JSON files in root directories
+   
         print(f"\n🔍 Searching for additional JSON files...")
         for root, dirs, files in os.walk("data"):
             for file in files:
@@ -482,7 +475,7 @@ def main():
                         print(f"  ❌ Failed: {file} - {e}")
                         importer.errors += 1
         
-        # Show results
+      
         print("\n" + "=" * 45)
         print("📊 IMPORT RESULTS")
         print("=" * 45)
@@ -497,7 +490,7 @@ def main():
         else:
             print("✅ Import completed successfully!")
         
-        # Quick verification
+
         result = db.execute_query("""
             SELECT 
                 COUNT(DISTINCT c.id) as customers,
@@ -518,7 +511,7 @@ def main():
             print(f"Total units: {r['units']}")
             print(f"Total readings: {r['readings']}")
         
-        # Show customer details with fixed query
+     
         customers = db.execute_query("""
             SELECT 
                 c.customer_code, 

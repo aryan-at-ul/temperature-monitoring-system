@@ -4,7 +4,7 @@ import os
 import asyncio
 from pathlib import Path
 
-# Get project root
+
 project_root = Path(__file__).parent.parent
 sys.path.insert(0, str(project_root))
 
@@ -15,11 +15,11 @@ async def test_token():
     token = sys.argv[1] if len(sys.argv) > 1 else "read_B_66_token_2025"
     print(f"Testing token: {token}")
     
-    # Create a mock credentials object
+
     credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials=token)
     
     try:
-        # Test the token authentication
+        
         customer = await get_current_customer(credentials)
         print(f"✅ Authentication successful!")
         print(f"Customer: {customer}")

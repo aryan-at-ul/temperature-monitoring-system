@@ -14,23 +14,23 @@ python -m simulation.cli validate-assignment
 echo -e "\n📄 Generating CSV files (Customer A behavior)..."
 python -m simulation.cli generate-csv --hours 24 --files 5
 
-# Generate diverse sample data
+
 echo -e "\n📊 Generating sample data for database design..."
 python -m simulation.cli generate-data --customer-id PHARMA --template pharmaceutical --hours 12 --format csv
 python -m simulation.cli generate-data --customer-id FOOD --template food_storage --hours 12 --format csv  
 python -m simulation.cli generate-data --customer-id SMALL --template small_business --hours 12 --format csv
 python -m simulation.cli generate-data --customer-id INDUST --template industrial --hours 12 --format csv
 
-# Show what we generated
+
 echo -e "\n🏢 Generated customers:"
 python -m simulation.cli show-customers
 
-# Examine the data
+
 echo -e "\n📁 Generated files:"
 find data/ -name "*.csv" -o -name "*.json" | wc -l | xargs echo "Total files:"
 find data/ -name "*.csv" -o -name "*.json" | head -5
 
-# Show sample CSV data
+
 echo -e "\n📋 Sample CSV content (Customer A format):"
 if ls data/assignment/csv_files/*.csv 1> /dev/null 2>&1; then
     echo "Assignment Customer A data:"
@@ -44,7 +44,7 @@ if ls data/csv_files/*.csv 1> /dev/null 2>&1; then
     head -3 $(ls data/csv_files/*.csv | head -1)
 fi
 
-# Check for edge cases
+
 echo -e "\n🔍 Checking for realistic edge cases:"
 if ls data/csv_files/*.csv 1> /dev/null 2>&1; then
     csv_file=$(ls data/csv_files/*.csv | head -1)
