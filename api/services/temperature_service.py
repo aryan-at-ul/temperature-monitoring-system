@@ -13,7 +13,7 @@ class TemperatureService:
         """
         Get temperature readings based on the query parameters.
         """
-        # Build the query
+   
         sql_query = """
             SELECT tr.*, f.name as facility_name, su.name as unit_name
             FROM temperature_readings tr
@@ -69,15 +69,14 @@ class TemperatureService:
             sql_query += f" AND tr.sensor_id = ${param_count}"
             params.append(query.sensor_id)
             param_count += 1
-        
-        # Add ordering
+
         sql_query += " ORDER BY tr.recorded_at DESC"
         
-        # Add pagination
+    
         sql_query += f" LIMIT ${param_count} OFFSET ${param_count + 1}"
         params.extend([query.limit, query.offset])
         
-        # Execute the query
+ 
         readings = await db.fetch(sql_query, *params)
         
         # Get total count using the same filters
@@ -209,17 +208,17 @@ class TemperatureService:
             params.append(query.sensor_id)
             param_count += 1
         
-        # Add ordering
+        
         sql_query += " ORDER BY tr.recorded_at DESC"
         
-        # Add pagination
+      
         sql_query += f" LIMIT ${param_count} OFFSET ${param_count + 1}"
         params.extend([query.limit, query.offset])
         
-        # Execute the query
+      
         readings = await db.fetch(sql_query, *params)
         
-        # Get total count using the same filters
+ 
         count_query = """
             SELECT COUNT(*) as count
             FROM temperature_readings tr
@@ -289,7 +288,7 @@ class TemperatureService:
         """
         Create a new temperature reading.
         """
-        # First, verify the storage unit belongs to the customer
+
         query = """
             SELECT su.id
             FROM storage_units su
@@ -301,7 +300,7 @@ class TemperatureService:
         if not unit:
             raise ValueError("Storage unit not found or does not belong to the customer")
         
-        # Get the facility ID for the storage unit
+    
         facility_query = "SELECT facility_id FROM storage_units WHERE id = $1"
         facility_result = await db.fetchrow(facility_query, str(reading_data.storage_unit_id))
         
@@ -310,7 +309,7 @@ class TemperatureService:
         
         facility_id = facility_result['facility_id']
         
-        # Insert the reading
+ 
         insert_query = """
             INSERT INTO temperature_readings (
                 customer_id, facility_id, storage_unit_id, temperature, temperature_unit,
@@ -332,7 +331,7 @@ class TemperatureService:
             reading_data.equipment_status
         )
         
-        # Create a complete reading object for the response
+
         reading = {
             **reading_data.dict(),
             "id": result['id'],
@@ -348,7 +347,7 @@ class TemperatureService:
         """
         Get temperature statistics for a customer.
         """
-        # Build the query
+   
         sql_query = """
             SELECT 
                 MIN(temperature) as min_temperature,
@@ -389,7 +388,7 @@ class TemperatureService:
             params.append(end_date)
             param_count += 1
         
-        # Execute the query
+
         stats = await db.fetchrow(sql_query, *params)
         
         return stats
@@ -402,7 +401,7 @@ class TemperatureService:
         valid_group_by = ['hour', 'day', 'week', 'month', 'facility', 'unit', 'sensor']
         valid_aggregations = ['avg', 'min', 'max', 'count']
         
-        # Validate parameters
+ 
         for group in aggregation_params.group_by:
             if group not in valid_group_by:
                 raise ValueError(f"Invalid group_by parameter: {group}. Valid values are {valid_group_by}")
@@ -411,11 +410,11 @@ class TemperatureService:
             if agg not in valid_aggregations:
                 raise ValueError(f"Invalid aggregation parameter: {agg}. Valid values are {valid_aggregations}")
         
-        # Build the query
+
         select_clause = []
         group_by_clause = []
         
-        # Add group by expressions
+     
         for group in aggregation_params.group_by:
             if group == 'hour':
                 select_clause.append("DATE_TRUNC('hour', recorded_at) as hour")
@@ -439,7 +438,7 @@ class TemperatureService:
                 select_clause.append("tr.sensor_id")
                 group_by_clause.append("tr.sensor_id")
         
-        # Add aggregation expressions
+
         for agg in aggregation_params.aggregations:
             if agg == 'avg':
                 select_clause.append("AVG(tr.temperature) as avg_temperature")
@@ -450,7 +449,7 @@ class TemperatureService:
             elif agg == 'count':
                 select_clause.append("COUNT(*) as reading_count")
         
-        # Build the final query
+  
         sql_query = f"""
             SELECT {', '.join(select_clause)}
             FROM temperature_readings tr
@@ -482,7 +481,7 @@ class TemperatureService:
             params.append(aggregation_params.end_date)
             param_count += 1
         
-        # Add group by clause
+    
         if group_by_clause:
             sql_query += f" GROUP BY {', '.join(group_by_clause)}"
         
@@ -492,16 +491,16 @@ class TemperatureService:
                     sql_query += f" ORDER BY {g}"
                     break
         
-        # Execute the query
+   
         results = await db.fetch(sql_query, *params)
         
-        # Transform results into the expected format
+
         aggregated_results = []
         for row in results:
             group_key = {}
             metrics = {}
             
-            # Extract group keys
+
             for group in aggregation_params.group_by:
                 if group == 'hour':
                     group_key['hour'] = row.get('hour')
@@ -520,7 +519,7 @@ class TemperatureService:
                 elif group == 'sensor':
                     group_key['sensor_id'] = row.get('sensor_id')
             
-            # Extract metrics
+
             for agg in aggregation_params.aggregations:
                 if agg == 'avg':
                     metrics['avg_temperature'] = row.get('avg_temperature')

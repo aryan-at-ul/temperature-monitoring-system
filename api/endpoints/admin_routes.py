@@ -41,7 +41,7 @@ async def get_all_customers(
     try:
         customers, total = await AdminService.get_all_customers(limit, offset)
         
-        # Calculate pagination info
+        
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -241,7 +241,7 @@ async def create_customer_token(
     Only accessible to admin users. The token value is only returned once and cannot be retrieved later.
     """
     try:
-        # First, verify the customer exists
+        
         customer_query = "SELECT id FROM customers WHERE id = $1"
         customer = await db.fetchrow(customer_query, str(customer_id))
         
@@ -287,7 +287,7 @@ async def get_all_facilities(
     try:
         facilities, total = await AdminService.get_all_facilities(limit, offset, customer_id)
         
-        # Calculate pagination info
+       
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -397,7 +397,7 @@ async def get_ingestion_logs(
             limit, offset, customer_id, status, start_date, end_date
         )
         
-        # Calculate pagination info
+        
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         

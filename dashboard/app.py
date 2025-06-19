@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# dashboard/app.py
+
 
 from flask import Flask, render_template, redirect, url_for, request, flash, session, jsonify
 import requests
@@ -10,24 +10,24 @@ from datetime import datetime, timedelta
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev_secret_key_change_in_production')
 
-# API Configuration
+
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:8000/api/v1')
 HEALTH_URL = os.environ.get('HEALTH_URL', 'http://localhost:8000/health')
 
-# Import the utility functions
+
 from utils import make_api_request, login_required, admin_required
 
-# Import routes - must be imported after app is defined
+
 from routes.common import common_bp
 from routes.customer import customer_bp
 from routes.admin import admin_bp
 
-# Register blueprints
+
 app.register_blueprint(common_bp)
 app.register_blueprint(customer_bp, url_prefix='/customer')
 app.register_blueprint(admin_bp, url_prefix='/admin')
 
-# Routes
+
 @app.route('/')
 def index():
     if 'token' in session:
@@ -43,7 +43,7 @@ def login():
         customer_code = request.form.get('customer_code')
         token_type = request.form.get('token_type', 'read')
         
-        # Check if admin login
+      
         if customer_code == 'admin':
             admin_token = request.form.get('token')
             # Test the admin token
@@ -61,9 +61,9 @@ def login():
             except requests.exceptions.RequestException:
                 flash('API service unavailable', 'danger')
         else:
-            # Customer login
+           
             token = request.form.get('token')
-            # Test the customer token
+           
             headers = {"Authorization": f"Bearer {token}"}
             try:
                 response = requests.get(f"{API_BASE_URL}/customers/profile", headers=headers)
@@ -78,7 +78,7 @@ def login():
             except requests.exceptions.RequestException:
                 flash('API service unavailable', 'danger')
     
-    # Check API health before showing login page
+
     try:
         health_response = requests.get(HEALTH_URL)
         api_status = health_response.json().get('status') == 'ok'
@@ -109,7 +109,7 @@ def page_not_found(e):
 def server_error(e):
     return render_template('error.html', error="Server error occurred"), 500
 
-# Context processor to make API available in all templates
+
 @app.context_processor
 def utility_processor():
     def api_url():

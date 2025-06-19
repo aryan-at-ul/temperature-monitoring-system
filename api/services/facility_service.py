@@ -12,7 +12,7 @@ class FacilityService:
         """
         Get facilities for a customer.
         """
-        # Build the query
+      
         sql_query = """
             SELECT * 
             FROM facilities
@@ -21,10 +21,10 @@ class FacilityService:
             LIMIT $2 OFFSET $3
         """
         
-        # Execute the query
+
         facilities = await db.fetch(sql_query, str(customer_id), limit, offset)
         
-        # Get total count
+   
         count_query = """
             SELECT COUNT(*) as count
             FROM facilities
@@ -54,7 +54,7 @@ class FacilityService:
         """
         Get storage units for a facility.
         """
-        # First, verify the facility belongs to the customer
+      
         facility_query = """
             SELECT id FROM facilities WHERE id = $1 AND customer_id = $2
         """
@@ -63,7 +63,7 @@ class FacilityService:
         if not facility:
             return None, 0
         
-        # Get storage units
+  
         sql_query = """
             SELECT su.*, 
                 (
@@ -100,10 +100,10 @@ class FacilityService:
             LIMIT $2 OFFSET $3
         """
         
-        # Execute the query
+       
         units = await db.fetch(sql_query, str(facility_id), limit, offset)
         
-        # Get total count
+        
         count_query = """
             SELECT COUNT(*) as count
             FROM storage_units
@@ -119,16 +119,16 @@ class FacilityService:
         """
         Get a facility with all its storage units and temperature statistics.
         """
-        # Get the facility
+      
         facility = await cls.get_facility(facility_id, customer_id)
         
         if not facility:
             return None
         
-        # Get all storage units for the facility
+     
         units, _ = await cls.get_storage_units(facility_id, customer_id, limit=1000, offset=0)
         
-        # Get temperature statistics for the facility
+      
         stats_query = """
             SELECT 
                 AVG(temperature) as avg_temperature,
@@ -139,7 +139,7 @@ class FacilityService:
         """
         stats = await db.fetchrow(stats_query, str(facility_id))
         
-        # Combine the results
+      
         result = dict(facility)
         result['units'] = units if units else []
         result['unit_count'] = len(units) if units else 0
@@ -180,7 +180,7 @@ class FacilityService:
         """
         Update a facility.
         """
-        # Build the query dynamically based on the provided fields
+
         update_fields = []
         params = []
         
@@ -204,11 +204,11 @@ class FacilityService:
             update_fields.append(f"longitude = ${len(params) + 1}")
             params.append(facility_data.longitude)
         
-        # If no fields to update, return the current facility
+  
         if not update_fields:
             return await cls.get_facility(facility_id, customer_id)
         
-        # Add facility_id and customer_id to params
+        
         params.extend([str(facility_id), str(customer_id)])
         
         update_query = f"""
@@ -226,7 +226,7 @@ class FacilityService:
         """
         Create a new storage unit.
         """
-        # First, verify the facility exists
+   
         facility_query = "SELECT id FROM facilities WHERE id = $1"
         facility = await db.fetchrow(facility_query, str(unit_data.facility_id))
         
@@ -260,7 +260,7 @@ class FacilityService:
         """
         Update a storage unit.
         """
-        # First, verify the unit belongs to the customer
+  
         verify_query = """
             SELECT su.id
             FROM storage_units su
@@ -272,7 +272,7 @@ class FacilityService:
         if not unit:
             return None
         
-        # Build the query dynamically based on the provided fields
+
         update_fields = []
         params = []
         
@@ -300,12 +300,12 @@ class FacilityService:
             update_fields.append(f"equipment_type = ${len(params) + 1}")
             params.append(unit_data.equipment_type)
         
-        # If no fields to update, return the current unit
+ 
         if not update_fields:
             get_query = "SELECT * FROM storage_units WHERE id = $1"
             return await db.fetchrow(get_query, str(unit_id))
         
-        # Add unit_id to params
+      
         params.append(str(unit_id))
         
         update_query = f"""

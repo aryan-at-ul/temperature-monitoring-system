@@ -20,7 +20,7 @@ async def get_current_customer(credentials: HTTPAuthorizationCredentials = Depen
     logger.debug(f"Validating token hash: {token_hash}")
     
     try:
-        # Get the token from the database
+ 
         query = """
             SELECT ct.*, c.* 
             FROM customer_tokens ct
@@ -36,10 +36,10 @@ async def get_current_customer(credentials: HTTPAuthorizationCredentials = Depen
                 detail="Invalid or expired token"
             )
             
-        # Check if token has expired (if expires_at is set)
+
         token_data = result[0]
         
-        # Update last_used_at
+    
         try:
             await db.execute(
                 "UPDATE customer_tokens SET last_used_at = NOW() WHERE token_hash = $1",
@@ -48,15 +48,15 @@ async def get_current_customer(credentials: HTTPAuthorizationCredentials = Depen
         except Exception as e:
             logger.warning(f"Failed to update last_used_at: {str(e)}")
         
-        # Process permissions from JSONB field
+      
         permissions = token_data.get('permissions', [])
         
         if isinstance(permissions, str):
             try:
-                # If it's stored as a string, parse it as JSON
+               
                 permissions = json.loads(permissions)
             except json.JSONDecodeError:
-                # If it's not valid JSON, treat it as a single permission
+                
                 permissions = [permissions]
         
         customer = {
@@ -85,7 +85,7 @@ async def get_admin_user(credentials: HTTPAuthorizationCredentials = Depends(sec
     """
     customer = await get_current_customer(credentials)
     
-    # Check if the token has admin permissions
+  
     if 'admin' not in customer['permissions']:
         logger.warning(f"User {customer['customer_code']} attempted admin access without permission")
         raise HTTPException(
@@ -101,7 +101,7 @@ async def check_read_permission(credentials: HTTPAuthorizationCredentials = Depe
     """
     customer = await get_current_customer(credentials)
     
-    # Check if the token has read permission (or admin, which implies all permissions)
+   
     if 'read' not in customer['permissions'] and 'admin' not in customer['permissions']:
         logger.warning(f"User {customer['customer_code']} attempted access without read permission")
         raise HTTPException(
@@ -117,7 +117,7 @@ async def check_write_permission(credentials: HTTPAuthorizationCredentials = Dep
     """
     customer = await get_current_customer(credentials)
     
-    # Check if the token has write permission (or admin, which implies all permissions)
+   
     if 'write' not in customer['permissions'] and 'admin' not in customer['permissions']:
         logger.warning(f"User {customer['customer_code']} attempted write operation without permission")
         raise HTTPException(

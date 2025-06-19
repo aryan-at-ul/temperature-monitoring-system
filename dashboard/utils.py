@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-# dashboard/utils.py
+
 
 import os
 import requests
 from flask import session, redirect, url_for, flash
 from functools import wraps
 
-# API Configuration
+
 API_BASE_URL = os.environ.get('API_BASE_URL', 'http://localhost:8000/api/v1')
 
-# Authentication decorator
+
 def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -28,7 +28,7 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-# API helper functions
+
 def make_api_request(endpoint, method="GET", params=None, data=None):
     """Make an API request with the stored token"""
     headers = {}

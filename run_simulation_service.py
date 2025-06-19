@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-# run_simulation_service.py
-
 import asyncio
 import yaml
 from pathlib import Path

@@ -109,7 +109,7 @@ async def get_temperature_trends(
             else:  # month
                 start_date = end_date - timedelta(days=365)
         
-        # Create aggregation parameters
+        
         aggregation_params = {
             "group_by": [interval],
             "aggregations": ["avg", "min", "max", "count"],
@@ -165,7 +165,7 @@ async def get_alarm_history(
     Optional parameters can be used to filter the data.
     """
     try:
-        # Build the query
+    
         sql_query = """
             SELECT tr.*, f.name as facility_name, su.name as unit_name
             FROM temperature_readings tr
@@ -199,17 +199,17 @@ async def get_alarm_history(
             params.append(end_date)
             param_count += 1
         
-        # Add ordering
+        
         sql_query += " ORDER BY tr.recorded_at DESC"
         
-        # Add pagination
+        
         sql_query += f" LIMIT ${param_count} OFFSET ${param_count + 1}"
         params.extend([limit, offset])
         
-        # Execute the query
+      
         alarms = await db.fetch(sql_query, *params)
         
-        # Get total count using the same filters
+       
         count_query = """
             SELECT COUNT(*) as count
             FROM temperature_readings tr
@@ -243,7 +243,7 @@ async def get_alarm_history(
         count_result = await db.fetchrow(count_query, *count_params)
         total = count_result['count'] if count_result else 0
         
-        # Calculate pagination info
+        
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -283,14 +283,14 @@ async def get_performance_metrics(
     Get performance metrics for the authenticated customer.
     """
     try:
-        # Set default dates if not provided
+        
         if not end_date:
             end_date = datetime.now()
         
         if not start_date:
             start_date = end_date - timedelta(days=30)
         
-        # Fix: Cast to numeric before using round function
+      
         uptime_query = """
             WITH time_periods AS (
                 SELECT 
@@ -319,7 +319,7 @@ async def get_performance_metrics(
         
         uptime_result = await db.fetchrow(uptime_query, start_date, end_date, customer['id'])
         
-        # Data quality query with proper casting
+        
         quality_query = """
             SELECT 
                 COUNT(*) as total_readings,
@@ -332,7 +332,7 @@ async def get_performance_metrics(
         
         quality_result = await db.fetchrow(quality_query, customer['id'], start_date, end_date)
         
-        # Temperature deviation query
+        
         deviation_query = """
             WITH deviations AS (
                 SELECT 
@@ -354,7 +354,7 @@ async def get_performance_metrics(
         
         deviation_result = await db.fetchrow(deviation_query, customer['id'], start_date, end_date)
         
-        # Status distribution query
+       
         status_query = """
             SELECT 
                 equipment_status,
@@ -369,7 +369,7 @@ async def get_performance_metrics(
         
         status_result = await db.fetch(status_query, customer['id'], start_date, end_date)
         
-        # Combine all metrics into a single response
+      
         performance_metrics = {
             "uptime": {
                 "hours_with_readings": uptime_result['hours_with_readings'] if uptime_result else 0,
@@ -405,7 +405,6 @@ async def get_performance_metrics(
 
 
 
-# Admin routes for analytics
 
 @router.get(
     "/admin/analytics/temperature/summary",
@@ -428,11 +427,11 @@ async def admin_get_temperature_summary(
     Only accessible to admin users. Optional parameters can be used to filter the time range.
     """
     try:
-        # Get all customers
+        
         customers_query = "SELECT id, customer_code FROM customers"
         customers = await db.fetch(customers_query)
         
-        # Get stats for each customer
+        
         summary = {}
         for customer in customers:
             stats = await TemperatureService.get_statistics(
@@ -440,7 +439,7 @@ async def admin_get_temperature_summary(
             )
             summary[customer['customer_code']] = stats
         
-        # Get system-wide stats
+        
         system_query = """
             SELECT 
                 MIN(temperature) as min_temperature,

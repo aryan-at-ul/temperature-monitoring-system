@@ -55,7 +55,7 @@ async def get_temperature_readings(
     Query parameters can be used to filter and paginate the results.
     """
     try:
-        # Create a query object
+        
         query = TemperatureQuery(
             limit=limit,
             offset=offset,
@@ -70,7 +70,7 @@ async def get_temperature_readings(
         
         readings, total = await TemperatureService.get_readings(customer, query)
         
-        # Calculate pagination info
+     
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -104,7 +104,7 @@ async def get_temperature_readings(
 async def get_latest_temperature_readings(
     limit: int = Query(20, ge=1, le=100),
     customer: dict = Depends(check_read_permission),
-    db = Depends(get_db)  # Add this line
+    db = Depends(get_db)  
 ):
     """
     Get the latest temperature reading for each storage unit.
@@ -165,7 +165,7 @@ async def get_facility_temperature_readings(
     Query parameters can be used to filter and paginate the results.
     """
     try:
-        # Create a query object
+   
         query = TemperatureQuery(
             limit=limit,
             offset=offset,
@@ -183,7 +183,7 @@ async def get_facility_temperature_readings(
         )
         
         if not readings and total == 0:
-            # Check if facility exists and belongs to customer
+           
             facility_exists = await db.fetchval(
                 "SELECT EXISTS(SELECT 1 FROM facilities WHERE id = $1 AND customer_id = $2)",
                 str(facility_id), customer['id']
@@ -195,7 +195,7 @@ async def get_facility_temperature_readings(
                     detail="Facility not found"
                 )
         
-        # Calculate pagination info
+     
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -239,13 +239,13 @@ async def get_unit_temperature_readings(
     quality_score: Optional[int] = Query(None, ge=0, le=1, description="Quality score (0=bad, 1=good)"),
     sensor_id: Optional[str] = Query(None, description="Sensor ID"),
     customer: dict = Depends(check_read_permission),
-    db = Depends(get_db)  # Add this line
+    db = Depends(get_db) 
 ):
     """
     Get temperature readings for a specific storage unit.
     """
     try:
-        # First, check if the unit exists and belongs to the customer
+        
         unit_query = """
             SELECT su.id
             FROM storage_units su
@@ -260,7 +260,7 @@ async def get_unit_temperature_readings(
                 detail="Storage unit not found"
             )
         
-        # Create a query object
+
         query = TemperatureQuery(
             limit=limit,
             offset=offset,
@@ -277,7 +277,7 @@ async def get_unit_temperature_readings(
             customer, query, storage_unit_id=str(unit_id)
         )
         
-        # Calculate pagination info
+
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -408,7 +408,7 @@ async def aggregate_temperature_data(
             detail=f"Error aggregating temperature data: {str(e)}"
         )
 
-# Admin routes for temperature data
+
 
 @router.get(
     "/admin/temperature",
@@ -439,7 +439,7 @@ async def admin_get_temperature_readings(
     Only accessible to admin users. Query parameters can be used to filter and paginate the results.
     """
     try:
-        # Create a query object
+        
         query = TemperatureQuery(
             limit=limit,
             offset=offset,
@@ -456,7 +456,7 @@ async def admin_get_temperature_readings(
             query, customer_id=str(customer_id) if customer_id else None
         )
         
-        # Calculate pagination info
+       
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         

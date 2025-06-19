@@ -25,13 +25,13 @@ class CustomerService:
         """
         Get detailed customer information including metrics.
         """
-        # Get the customer
+
         customer = await cls.get_customer_profile(customer_id)
         
         if not customer:
             return None
         
-        # Get facility count
+      
         facility_count_query = """
             SELECT COUNT(*) as count
             FROM facilities
@@ -39,7 +39,7 @@ class CustomerService:
         """
         facility_count = await db.fetchval(facility_count_query, str(customer_id))
         
-        # Get unit count
+
         unit_count_query = """
             SELECT COUNT(*) as count
             FROM storage_units su
@@ -48,7 +48,7 @@ class CustomerService:
         """
         unit_count = await db.fetchval(unit_count_query, str(customer_id))
         
-        # Get active readings count
+        
         readings_count_query = """
             SELECT COUNT(*) as count
             FROM temperature_readings
@@ -56,7 +56,7 @@ class CustomerService:
         """
         readings_count = await db.fetchval(readings_count_query, str(customer_id))
         
-        # Get last reading time
+
         last_reading_query = """
             SELECT MAX(recorded_at) as last_time
             FROM temperature_readings
@@ -64,7 +64,7 @@ class CustomerService:
         """
         last_reading_time = await db.fetchval(last_reading_query, str(customer_id))
         
-        # Combine the results
+      
         result = dict(customer)
         result['facility_count'] = facility_count or 0
         result['unit_count'] = unit_count or 0
@@ -78,7 +78,7 @@ class CustomerService:
         """
         Update a customer's profile.
         """
-        # Build the query dynamically based on the provided fields
+        
         update_fields = []
         params = []
         
@@ -102,11 +102,11 @@ class CustomerService:
             update_fields.append(f"is_active = ${len(params) + 1}")
             params.append(customer_data.is_active)
         
-        # Add updated_at and customer_id
+    
         update_fields.append(f"updated_at = NOW()")
         params.append(str(customer_id))
         
-        # If no fields to update, return the current customer
+   
         if not update_fields:
             return await cls.get_customer_profile(customer_id)
         
@@ -140,11 +140,11 @@ class CustomerService:
         """
         Create a new API token for a customer.
         """
-        # Generate a secure random token
+
         token = secrets.token_hex(32)
         token_hash = hashlib.sha256(token.encode()).hexdigest()
         
-        # Insert the token
+    
         insert_query = """
             INSERT INTO customer_tokens (
                 customer_id, token_hash, token_name, permissions, 
@@ -165,7 +165,7 @@ class CustomerService:
             token_data.expires_at
         )
         
-        # Return the token details with the plain token (will only be shown once)
+  
         return {**dict(result), 'token': token}
     
     @classmethod

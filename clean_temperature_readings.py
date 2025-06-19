@@ -1,13 +1,4 @@
 #!/usr/bin/env python3
-"""
-Script to clean the temperature_readings table for testing
-
-Usage:
-    python clean_temperature_readings.py [--all]
-    
-Options:
-    --all    Delete all records (default is to keep records older than 1 hour)
-"""
 import asyncio
 import argparse
 import logging
@@ -36,31 +27,31 @@ async def clean_temperature_readings(delete_all=False):
         delete_all: If True, delete all records. Otherwise, keep records older than 1 hour.
     """
     try:
-        # Connect to the database
+        
         await db.connect()
         
         if delete_all:
-            # Delete all records
+            
             query = "DELETE FROM public.temperature_readings"
             result = await db.execute(query)
             
-            # Extract the count from the result string (format: "DELETE COUNT")
+            
             count = int(result.split(" ")[1]) if result else 0
             
             logger.info(f"Deleted all {count} records from temperature_readings table")
         else:
-            # Delete records newer than 1 hour
+            
             cutoff_time = datetime.now() - timedelta(hours=1)
             
             query = "DELETE FROM public.temperature_readings WHERE created_at > $1"
             result = await db.execute(query, cutoff_time)
             
-            # Extract the count from the result string (format: "DELETE COUNT")
+            
             count = int(result.split(" ")[1]) if result else 0
             
             logger.info(f"Deleted {count} records newer than {cutoff_time} from temperature_readings table")
             
-        # Count remaining records
+     
         count_query = "SELECT COUNT(*) FROM public.temperature_readings"
         remaining = await db.fetchval(count_query)
         
@@ -70,7 +61,7 @@ async def clean_temperature_readings(delete_all=False):
         logger.error(f"Error cleaning temperature_readings table: {e}", exc_info=True)
         
     finally:
-        # Close database connection
+  
         await db.close()
         
 

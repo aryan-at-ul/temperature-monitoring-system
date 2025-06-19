@@ -1,4 +1,4 @@
-# database/models/temperature_reading.py (continued)
+# database/models/temperature_reading.py
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional

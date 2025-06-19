@@ -15,7 +15,7 @@ class AdminService:
         """
         Get all customers.
         """
-        # Build the query
+     
         sql_query = """
             SELECT c.*, 
                 (SELECT COUNT(*) FROM facilities f WHERE f.customer_id = c.id) as facility_count,
@@ -36,10 +36,10 @@ class AdminService:
             LIMIT $1 OFFSET $2
         """
         
-        # Execute the query
+
         customers = await db.fetch(sql_query, limit, offset)
         
-        # Get total count
+     
         count_query = "SELECT COUNT(*) as count FROM customers"
         count_result = await db.fetchrow(count_query)
         total = count_result['count'] if count_result else 0
@@ -103,7 +103,7 @@ class AdminService:
         """
         Update a customer.
         """
-        # Build the query dynamically based on the provided fields
+
         update_fields = []
         params = []
         
@@ -127,7 +127,7 @@ class AdminService:
             update_fields.append(f"is_active = ${len(params) + 1}")
             params.append(customer_data.is_active)
         
-        # Add updated_at and customer_id
+  
         update_fields.append(f"updated_at = NOW()")
         params.append(str(customer_id))
         
@@ -163,10 +163,10 @@ class AdminService:
         sql_query += " ORDER BY f.created_at DESC LIMIT $2 OFFSET $3"
         params.extend([limit, offset])
         
-        # Execute the query
+   
         facilities = await db.fetch(sql_query, *params)
         
-        # Get total count
+
         count_query = "SELECT COUNT(*) as count FROM facilities"
         count_params = []
         
@@ -186,8 +186,7 @@ class AdminService:
         """
         query = "SELECT * FROM system_config"
         config = await db.fetch(query)
-        
-        # Convert to dictionary
+      
         config_dict = {}
         for item in config:
             config_dict[item['key']] = {
@@ -203,12 +202,12 @@ class AdminService:
         """
         Update system configuration.
         """
-        # Check if the key exists
+
         check_query = "SELECT key FROM system_config WHERE key = $1"
         existing = await db.fetchrow(check_query, key)
         
         if existing:
-            # Update existing config
+
             update_query = """
                 UPDATE system_config
                 SET value = $1, updated_at = NOW()
@@ -224,7 +223,7 @@ class AdminService:
             
             result = await db.fetchrow(update_query, *params)
         else:
-            # Insert new config
+            
             insert_query = """
                 INSERT INTO system_config (key, value, description, updated_at)
                 VALUES ($1, $2, $3, NOW())
@@ -243,7 +242,7 @@ class AdminService:
         """
         Get ingestion logs.
         """
-        # Build the query
+      
         sql_query = """
             SELECT il.*, c.customer_code, c.name as customer_name
             FROM ingestion_logs il
@@ -277,10 +276,10 @@ class AdminService:
         sql_query += " ORDER BY il.start_time DESC LIMIT $" + str(param_count) + " OFFSET $" + str(param_count + 1)
         params.extend([limit, offset])
         
-        # Execute the query
+    
         logs = await db.fetch(sql_query, *params)
         
-        # Get total count
+        
         count_query = """
             SELECT COUNT(*) as count
             FROM ingestion_logs il

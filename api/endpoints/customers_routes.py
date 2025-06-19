@@ -11,8 +11,7 @@ from api.models.responses import ErrorResponse
 from api.services.customer_service import CustomerService
 from database.connection import db
 
-from database.connection import DatabaseConnection  # Add this import
-
+from database.connection import DatabaseConnection  
 
 db_manager = DatabaseConnection() 
 

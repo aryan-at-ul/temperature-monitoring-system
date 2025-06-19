@@ -5,7 +5,7 @@ import json
 import datetime
 from functools import wraps
 
-# Import from utils.py instead of app.py
+
 from utils import make_api_request, admin_required
 
 admin_bp = Blueprint('admin', __name__)
@@ -15,19 +15,19 @@ admin_bp = Blueprint('admin', __name__)
 def dashboard():
     """Admin dashboard home page"""
     try:
-        # Get all customers
+        
         customers = make_api_request('/admin/customers')
         
-        # Get system configuration
+       
         system_config = make_api_request('/admin/config')
         
-        # Get recent ingestion logs
+      
         ingestion_logs = make_api_request('/admin/ingestion/logs')
         
-        # Get temperature summary across all customers
+       
         temp_summary = make_api_request('/admin/analytics/temperature/summary')
         
-        # Get all facilities 
+ 
         facilities = make_api_request('/admin/facilities')
         
         return render_template(
@@ -47,7 +47,7 @@ def dashboard():
 def customers():
     """Admin customers management page"""
     try:
-        # Get all customers
+   
         customers_data = make_api_request('/admin/customers')
         
         return render_template(
@@ -63,14 +63,12 @@ def customers():
 def customer_details(customer_id):
     """Detailed view of a single customer"""
     try:
-        # Get customer details
+    
         customer = make_api_request(f'/admin/customers/{customer_id}')
         
-        # Get customer tokens
+      
         tokens = make_api_request(f'/admin/customers/{customer_id}/tokens')
-        
-        # Get facilities for this customer
-        # We need to get all facilities and filter by customer_id
+
         all_facilities = make_api_request('/admin/facilities')
         facilities = [f for f in all_facilities.get('items', []) if f.get('customer_id') == customer_id]
         
@@ -89,13 +87,12 @@ def customer_details(customer_id):
 def facilities():
     """Admin facilities management page"""
     try:
-        # Get all facilities
+       
         facilities_data = make_api_request('/admin/facilities')
         
-        # Get all customers for mapping customer_id to names
+    
         customers_data = make_api_request('/admin/customers')
-        
-        # Create a customer lookup dict
+
         customer_lookup = {}
         for customer in customers_data.get('items', []):
             customer_lookup[customer.get('id')] = customer.get('name') or customer.get('customer_code')
@@ -114,11 +111,10 @@ def facilities():
 def facility_details(facility_id):
     """Admin detailed view of a single facility"""
     try:
-        # Since we're admin, we need to use admin endpoints
-        # Get temperature readings for this facility
+
         readings = make_api_request(f'/admin/temperature/facility/{facility_id}')
         
-        # Get all facilities to find the one we need
+
         all_facilities = make_api_request('/admin/facilities')
         facility = next((f for f in all_facilities.get('items', []) if f.get('id') == facility_id), None)
         
@@ -126,13 +122,11 @@ def facility_details(facility_id):
             flash("Facility not found", "danger")
             return redirect(url_for('admin.facilities'))
         
-        # Get customer info
+    
         customer_id = facility.get('customer_id')
         customer = make_api_request(f'/admin/customers/{customer_id}')
-        
-        # Get storage units for this facility
-        # We don't have a direct admin endpoint for this, so we'll need to improvise
-        all_units = []  # This would ideally come from an admin API endpoint
+      
+        all_units = []  
         
         return render_template(
             'admin/facility_details.html',
@@ -150,13 +144,12 @@ def facility_details(facility_id):
 def analytics():
     """Admin analytics dashboard"""
     try:
-        # Get temperature summary across all customers
+ 
         temp_summary = make_api_request('/admin/analytics/temperature/summary')
-        
-        # Get customer aggregation data
+     
         customers = make_api_request('/admin/customers')
         
-        # Get recent ingestion logs
+    
         ingestion_logs = make_api_request('/admin/ingestion/logs')
         
         return render_template(
@@ -174,7 +167,7 @@ def analytics():
 def config():
     """Admin system configuration page"""
     if request.method == 'POST':
-        # Handle configuration updates
+     
         config_key = request.form.get('key')
         config_value = request.form.get('value')
         config_description = request.form.get('description')
@@ -192,7 +185,7 @@ def config():
                 flash(f"Error updating configuration: {str(e)}", "danger")
     
     try:
-        # Get system configuration
+        
         system_config = make_api_request('/admin/config')
         
         return render_template(
@@ -209,23 +202,22 @@ def ml():
     """Admin Machine Learning dashboard (placeholder for future)"""
     return render_template('admin/ml.html')
 
-# API endpoints for AJAX requests
+
 @admin_bp.route('/api/customer_stats')
 @admin_required
 def customer_stats():
     """Get aggregated stats per customer in JSON format for charts"""
     try:
-        # Get all customers
+        
         customers = make_api_request('/admin/customers')
         
-        # Build stats for each customer
+ 
         stats = []
         for customer in customers.get('items', []):
             customer_id = customer.get('id')
             customer_code = customer.get('customer_code')
             
-            # This is a simplification - in reality, you'd need an admin endpoint
-            # that provides per-customer statistics
+
             stats.append({
                 'customer_id': customer_id,
                 'customer_code': customer_code,
@@ -243,10 +235,10 @@ def customer_stats():
 def ingestion_summary():
     """Get summary of recent ingestion processes for charts"""
     try:
-        # Get ingestion logs
+       
         logs = make_api_request('/admin/ingestion/logs')
         
-        # Process logs to get summary data
+
         success_count = 0
         failure_count = 0
         total_records = 0

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# api/tests/test_all_endpoints.py
+
 
 import requests
 import json
@@ -28,7 +28,7 @@ def load_tokens():
             with open(token_path, "r") as f:
                 return json.load(f)
         
-        # Hardcoded tokens as fallback
+    
         return {
             "A": {
                 "read_token": "read_A_65_token_2025",
@@ -115,10 +115,10 @@ def test_health_endpoint():
     """Test the health endpoint"""
     print("\n\n====== TESTING HEALTH ENDPOINTS ======")
     
-    # Test health endpoint
+ 
     health_response = test_endpoint(HEALTH_URL, "GET")
     
-    # Test ping endpoint
+
     test_endpoint("http://localhost:8000/ping", "GET")
 
 def test_temperature_endpoints(customer_code="B", token_type="read"):
@@ -128,38 +128,38 @@ def test_temperature_endpoints(customer_code="B", token_type="read"):
     token = get_token(customer_code, token_type)
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get all temperature readings
+
     readings = test_endpoint("/temperature", "GET", headers)
     
-    # Test get latest temperature readings
+
     test_endpoint("/temperature/latest", "GET", headers)
     
-    # Get sample facility_id and unit_id
+   
     facility_id = None
     unit_id = None
     
-    # Test get facilities to find a facility_id
+    
     facilities = test_endpoint("/facilities", "GET", headers)
     if facilities and "items" in facilities and len(facilities["items"]) > 0:
         facility_id = facilities["items"][0]["id"]
         print(f"Found facility_id: {facility_id}")
         
-        # Test get temperature readings for a facility
+  
         test_endpoint(f"/temperature/facility/{facility_id}", "GET", headers)
         
-        # Test get storage units to find a unit_id
+  
         units = test_endpoint(f"/facilities/{facility_id}/units", "GET", headers)
         if units and "items" in units and len(units["items"]) > 0:
             unit_id = units["items"][0]["id"]
             print(f"Found unit_id: {unit_id}")
             
-            # Test get temperature readings for a storage unit
+      
             test_endpoint(f"/temperature/unit/{unit_id}", "GET", headers)
     
-    # Test get temperature statistics
+    
     test_endpoint("/temperature/stats", "GET", headers)
     
-    # Test get temperature statistics with date range
+    
     yesterday = datetime.now() - timedelta(days=1)
     params = {
         "start_date": yesterday.isoformat(),
@@ -167,9 +167,9 @@ def test_temperature_endpoints(customer_code="B", token_type="read"):
     }
     test_endpoint("/temperature/stats", "GET", headers, params)
     
-    # Test temperature aggregation (if write token)
+
     if token_type == "write" and unit_id:
-        # Test create temperature reading
+       
         reading_data = {
             "storage_unit_id": unit_id,
             "temperature": -18.5,
@@ -181,7 +181,7 @@ def test_temperature_endpoints(customer_code="B", token_type="read"):
         }
         test_endpoint("/temperature", "POST", headers, data=reading_data, expected_status=201)
     
-    # Test temperature aggregation
+    
     aggregation_data = {
         "group_by": ["day", "facility"],
         "aggregations": ["avg", "min", "max", "count"],
@@ -199,7 +199,7 @@ def test_facilities_endpoints(customer_code="B", token_type="read"):
     token = get_token(customer_code, token_type)
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get all facilities
+    
     facilities = test_endpoint("/facilities", "GET", headers)
     
     facility_id = None
@@ -207,13 +207,13 @@ def test_facilities_endpoints(customer_code="B", token_type="read"):
         facility_id = facilities["items"][0]["id"]
         print(f"Found facility_id: {facility_id}")
         
-        # Test get facility
+    
         test_endpoint(f"/facilities/{facility_id}", "GET", headers)
         
-        # Test get facility with units
+        
         test_endpoint(f"/facilities/{facility_id}/detailed", "GET", headers)
         
-        # Test get storage units for a facility
+       
         units = test_endpoint(f"/facilities/{facility_id}/units", "GET", headers)
         
         unit_id = None
@@ -221,10 +221,10 @@ def test_facilities_endpoints(customer_code="B", token_type="read"):
             unit_id = units["items"][0]["id"]
             print(f"Found unit_id: {unit_id}")
             
-            # Test get storage unit
+            
             test_endpoint(f"/units/{unit_id}", "GET", headers)
     
-    # Test create facility (if write token)
+    
     if token_type == "write":
         # Create facility
         facility_data = {
@@ -239,13 +239,13 @@ def test_facilities_endpoints(customer_code="B", token_type="read"):
             new_facility_id = new_facility["id"]
             print(f"Created new facility with ID: {new_facility_id}")
             
-            # Update facility
+           
             update_data = {
                 "name": f"Updated Test Facility {int(time.time())}"
             }
             test_endpoint(f"/facilities/{new_facility_id}", "PUT", headers, data=update_data)
             
-            # Create storage unit
+          
             unit_data = {
                 "unit_code": f"test_unit_{int(time.time())}",
                 "name": "Test Storage Unit",
@@ -261,7 +261,7 @@ def test_facilities_endpoints(customer_code="B", token_type="read"):
                 new_unit_id = new_unit["id"]
                 print(f"Created new storage unit with ID: {new_unit_id}")
                 
-                # Update storage unit
+                
                 update_unit_data = {
                     "name": f"Updated Test Unit {int(time.time())}"
                 }
@@ -274,15 +274,15 @@ def test_customer_endpoints(customer_code="B", token_type="read"):
     token = get_token(customer_code, token_type)
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get customer profile
+    
     test_endpoint("/customers/profile", "GET", headers)
     
-    # Test get customer tokens
+    
     tokens = test_endpoint("/customers/tokens", "GET", headers)
     
-    # Test create and revoke token (if write token)
+    
     if token_type == "write":
-        # Create token
+        
         token_data = {
             "token_name": f"Test Token {int(time.time())}",
             "permissions": ["read"],
@@ -294,10 +294,10 @@ def test_customer_endpoints(customer_code="B", token_type="read"):
             token_id = new_token["id"]
             print(f"Created new token with ID: {token_id}")
             
-            # Revoke token
+            
             test_endpoint(f"/customers/tokens/{token_id}", "DELETE", headers)
         
-        # Update customer profile
+       
         update_data = {
             "name": f"Updated Test Customer {int(time.time())}"
         }
@@ -310,10 +310,10 @@ def test_analytics_endpoints(customer_code="B", token_type="read"):
     token = get_token(customer_code, token_type)
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get temperature summary
+
     test_endpoint("/analytics/temperature/summary", "GET", headers)
     
-    # Test get temperature trends
+
     params = {
         "interval": "day",
         "start_date": (datetime.now() - timedelta(days=7)).isoformat(),
@@ -321,10 +321,10 @@ def test_analytics_endpoints(customer_code="B", token_type="read"):
     }
     test_endpoint("/analytics/temperature/trends", "GET", headers, params)
     
-    # Test get alarm history
+
     test_endpoint("/analytics/alarms/history", "GET", headers)
     
-    # Test get performance metrics
+
     test_endpoint("/analytics/performance", "GET", headers)
 
 def test_admin_endpoints():
@@ -334,7 +334,7 @@ def test_admin_endpoints():
     token = get_token("admin", "admin")
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get all customers
+
     customers = test_endpoint("/admin/customers", "GET", headers)
     
     customer_id = None
@@ -342,13 +342,13 @@ def test_admin_endpoints():
         customer_id = customers["items"][0]["id"]
         print(f"Found customer_id: {customer_id}")
         
-        # Test get customer
+   
         test_endpoint(f"/admin/customers/{customer_id}", "GET", headers)
         
-        # Test get customer tokens
+  
         test_endpoint(f"/admin/customers/{customer_id}/tokens", "GET", headers)
         
-        # Test create customer token
+
         token_data = {
             "token_name": f"Admin Created Token {int(time.time())}",
             "permissions": ["read"],
@@ -356,29 +356,29 @@ def test_admin_endpoints():
         }
         test_endpoint(f"/admin/customers/{customer_id}/tokens", "POST", headers, data=token_data, expected_status=201)
         
-        # Test update customer
+    
         update_data = {
             "name": f"Admin Updated Customer {int(time.time())}"
         }
         test_endpoint(f"/admin/customers/{customer_id}", "PUT", headers, data=update_data)
     
-    # Test get all facilities
+
     facilities = test_endpoint("/admin/facilities", "GET", headers)
     
-    # Test get system configuration
+  
     test_endpoint("/admin/config", "GET", headers)
     
-    # Test update system configuration
+ 
     config_data = {
         "value": 2555,
         "description": "Number of days to retain temperature data"
     }
     test_endpoint("/admin/config/data_retention_days", "PUT", headers, data=config_data)
     
-    # Test get ingestion logs
+
     test_endpoint("/admin/ingestion/logs", "GET", headers)
     
-    # Test get temperature summary
+
     test_endpoint("/admin/analytics/temperature/summary", "GET", headers)
 
 def test_admin_temperature_endpoints():
@@ -388,17 +388,17 @@ def test_admin_temperature_endpoints():
     token = get_token("admin", "admin")
     headers = {"Authorization": f"Bearer {token}"}
     
-    # Test get all temperature readings
+
     test_endpoint("/admin/temperature", "GET", headers)
     
-    # Get a facility ID
+ 
     facilities = test_endpoint("/admin/facilities", "GET", headers)
     
     if facilities and "items" in facilities and len(facilities["items"]) > 0:
         facility_id = facilities["items"][0]["id"]
         print(f"Found facility_id: {facility_id}")
         
-        # Test get temperature readings for a facility
+
         test_endpoint(f"/admin/temperature/facility/{facility_id}", "GET", headers)
 
 def run_all_tests(customer_code="B", token_type="read", admin=False, all_tests=False):
@@ -407,33 +407,33 @@ def run_all_tests(customer_code="B", token_type="read", admin=False, all_tests=F
     print(f"Customer: {customer_code}, Token Type: {token_type}")
     print(f"Admin: {admin}, All Tests: {all_tests}")
     
-    # Start timer
+  
     start_time = time.time()
     
-    # Test health endpoint
+
     test_health_endpoint()
     
-    # Test customer endpoints
+   
     if all_tests:
-        # Test with multiple customers
+      
         for code in ["A", "B", "C"]:
             test_temperature_endpoints(code, token_type)
             test_facilities_endpoints(code, token_type)
             test_customer_endpoints(code, token_type)
             test_analytics_endpoints(code, token_type)
     else:
-        # Test with specific customer
+        
         test_temperature_endpoints(customer_code, token_type)
         test_facilities_endpoints(customer_code, token_type)
         test_customer_endpoints(customer_code, token_type)
         test_analytics_endpoints(customer_code, token_type)
     
-    # Test admin endpoints
+    
     if admin or all_tests:
         test_admin_endpoints()
         test_admin_temperature_endpoints()
     
-    # Calculate and print elapsed time
+    
     elapsed_time = time.time() - start_time
     print(f"\n\n======= TESTS COMPLETED IN {elapsed_time:.2f} SECONDS =======")
 

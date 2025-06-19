@@ -25,20 +25,20 @@ async def health_check():
     Check the health of the API and its dependencies.
     """
     try:
-        # Check database connection
+        
         db_status = "ok"
         try:
-            # Try a simple query to check the database connection
+            
             await db.fetchval("SELECT 1")
         except Exception as e:
             db_status = f"error: {str(e)}"
             logger.error(f"Database health check failed: {str(e)}")
             logger.error(traceback.format_exc())
         
-        # Check RabbitMQ connection (if applicable)
+     
         rabbitmq_status = "ok"
         try:
-            # Assuming rabbitmq client is available
+            
             from data_ingestion.queue.rabbitmq_client import check_connection
             if not await check_connection():
                 rabbitmq_status = "error: connection failed"
@@ -47,7 +47,7 @@ async def health_check():
             logger.error(f"RabbitMQ health check failed: {str(e)}")
             logger.error(traceback.format_exc())
         
-        # Calculate uptime
+    
         uptime = datetime.now() - start_time
         uptime_seconds = uptime.total_seconds()
         
@@ -91,7 +91,7 @@ async def system_info():
     Get detailed system information about the server.
     """
     try:
-        # Get system information
+       
         system_info = {
             "platform": platform.platform(),
             "python_version": sys.version,

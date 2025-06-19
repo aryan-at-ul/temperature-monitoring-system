@@ -44,7 +44,7 @@ async def get_facilities(
     try:
         facilities, total = await FacilityService.get_facilities(customer['id'], limit, offset)
         
-        # Calculate pagination info
+        
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -168,7 +168,7 @@ async def get_facility_units(
                 detail="Facility not found"
             )
         
-        # Calculate pagination info
+   
         page = (offset // limit) + 1 if limit > 0 else 1
         pages = (total + limit - 1) // limit if limit > 0 else 1
         
@@ -208,7 +208,7 @@ async def get_storage_unit(
     Get a storage unit by ID.
     """
     try:
-        # Get the storage unit with additional information
+        
         query = """
             SELECT su.*, 
                 (
@@ -283,7 +283,7 @@ async def create_facility(
     Create a new facility.
     """
     try:
-        # Override the customer_id with the authenticated customer's ID
+        
         facility_data = FacilityCreate(
             **facility.dict(),
             customer_id=customer['id']
@@ -361,7 +361,7 @@ async def create_storage_unit(
     Create a new storage unit for a facility.
     """
     try:
-        # First, verify the facility belongs to the customer
+    
         facility_query = """
             SELECT id FROM facilities WHERE id = $1 AND customer_id = $2
         """
@@ -373,7 +373,7 @@ async def create_storage_unit(
                 detail="Facility not found"
             )
         
-        # Override the facility_id with the path parameter
+      
         unit_data = StorageUnitCreate(
             **unit.dict(),
             facility_id=facility_id
