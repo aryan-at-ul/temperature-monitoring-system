@@ -109,7 +109,6 @@ try:
 except ImportError:
     logger.warning("Analytics routes not found, skipping")
 
-
 def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
@@ -121,7 +120,7 @@ def custom_openapi():
         routes=app.routes,
     )
     
-
+    # Add security scheme definition
     openapi_schema["components"]["securitySchemes"] = {
         "BearerAuth": {
             "type": "http",
@@ -131,14 +130,54 @@ def custom_openapi():
         }
     }
     
-
-    for path in openapi_schema["paths"].values():
-        for operation in path.values():
-            if "security" not in operation:
-                operation["security"] = [{"BearerAuth": []}]
+    # Manually add security to temperature endpoints
+    protected_endpoints = [
+        "/api/v1/temperature",
+        "/api/v1/temperature/latest", 
+        "/api/v1/temperature/facility/{facility_id}",
+        "/api/v1/temperature/unit/{unit_id}",
+        "/api/v1/temperature/stats",
+        "/api/v1/temperature/aggregate",
+        "/api/v1/admin/temperature"
+    ]
+    
+    for path_key, path_item in openapi_schema["paths"].items():
+        if any(path_key.startswith(endpoint.replace("{", "{").replace("}", "}")) for endpoint in protected_endpoints):
+            for method, operation in path_item.items():
+                if method in ["get", "post", "put", "delete"]:
+                    operation["security"] = [{"BearerAuth": []}]
     
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+# def custom_openapi():
+#     if app.openapi_schema:
+#         return app.openapi_schema
+    
+#     openapi_schema = get_openapi(
+#         title="Temperature Monitoring API",
+#         version="1.0.0",
+#         description="API for temperature monitoring system",
+#         routes=app.routes,
+#     )
+    
+
+#     openapi_schema["components"]["securitySchemes"] = {
+#         "BearerAuth": {
+#             "type": "http",
+#             "scheme": "bearer",
+#             "bearerFormat": "JWT",
+#             "description": "Enter your API token with the 'Bearer ' prefix"
+#         }
+#     }
+    
+
+#     # for path in openapi_schema["paths"].values():
+#     #     for operation in path.values():
+#     #         if "security" not in operation:
+#     #             operation["security"] = [{"BearerAuth": []}]
+    
+#     app.openapi_schema = openapi_schema
+#     return app.openapi_schema
 
 app.openapi = custom_openapi
 
@@ -152,4 +191,4 @@ async def root():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("api.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("api.main:app", host="0.0.0.0", port=8000) #, reload=True)
