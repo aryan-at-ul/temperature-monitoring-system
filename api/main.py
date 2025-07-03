@@ -109,46 +109,8 @@ try:
 except ImportError:
     logger.warning("Analytics routes not found, skipping")
 
-def custom_openapi():
-    if app.openapi_schema:
-        return app.openapi_schema
-    
-    openapi_schema = get_openapi(
-        title="Temperature Monitoring API",
-        version="1.0.0",
-        description="API for temperature monitoring system",
-        routes=app.routes,
-    )
-    
-    # Add security scheme definition
-    openapi_schema["components"]["securitySchemes"] = {
-        "BearerAuth": {
-            "type": "http",
-            "scheme": "bearer",
-            "bearerFormat": "JWT",
-            "description": "Enter your API token with the 'Bearer ' prefix"
-        }
-    }
-    
-    # Manually add security to temperature endpoints
-    protected_endpoints = [
-        "/api/v1/temperature",
-        "/api/v1/temperature/latest", 
-        "/api/v1/temperature/facility/{facility_id}",
-        "/api/v1/temperature/unit/{unit_id}",
-        "/api/v1/temperature/stats",
-        "/api/v1/temperature/aggregate",
-        "/api/v1/admin/temperature"
-    ]
-    
-    for path_key, path_item in openapi_schema["paths"].items():
-        if any(path_key.startswith(endpoint.replace("{", "{").replace("}", "}")) for endpoint in protected_endpoints):
-            for method, operation in path_item.items():
-                if method in ["get", "post", "put", "delete"]:
-                    operation["security"] = [{"BearerAuth": []}]
-    
-    app.openapi_schema = openapi_schema
-    return app.openapi_schema
+
+
 # def custom_openapi():
 #     if app.openapi_schema:
 #         return app.openapi_schema
@@ -160,7 +122,7 @@ def custom_openapi():
 #         routes=app.routes,
 #     )
     
-
+#     # Add security scheme definition
 #     openapi_schema["components"]["securitySchemes"] = {
 #         "BearerAuth": {
 #             "type": "http",
@@ -170,14 +132,144 @@ def custom_openapi():
 #         }
 #     }
     
+#     # All protected endpoints - using the same pattern that worked for temperature
+#     protected_endpoints = [
+#         # Temperature endpoints
+#         "/api/v1/temperature",
+#         "/api/v1/temperature/latest", 
+#         "/api/v1/temperature/facility/{facility_id}",
+#         "/api/v1/temperature/unit/{unit_id}",
+#         "/api/v1/temperature/stats",
+#         "/api/v1/temperature/aggregate",
+#         "/api/v1/admin/temperature",
+        
+#         # Facilities endpoints
+#         "/api/v1/facilities",
+#         "/api/v1/facilities/{facility_id}",
+#         "/api/v1/facilities/{facility_id}/detailed",
+#         "/api/v1/facilities/{facility_id}/units",
+#         "/api/v1/units/{unit_id}",
+        
+#         # Customer endpoints
+#         "/api/v1/customers/profile",
+#         "/api/v1/customers/tokens",
+#         "/api/v1/customers/tokens/{token_id}",
+        
+#         # Analytics endpoints
+#         "/api/v1/analytics/temperature/summary",
+#         "/api/v1/analytics/temperature/trends",
+#         "/api/v1/analytics/alarms/history",
+#         "/api/v1/analytics/performance",
+        
+#         # Admin endpoints
+#         "/api/v1/admin/customers",
+#         "/api/v1/admin/customers/{customer_id}",
+#         "/api/v1/admin/customers/{customer_id}/tokens",
+#         "/api/v1/admin/facilities",
+#         "/api/v1/admin/config",
+#         "/api/v1/admin/config/{key}",
+#         "/api/v1/admin/ingestion/logs",
+#         "/api/v1/admin/analytics/temperature/summary",
 
-#     # for path in openapi_schema["paths"].values():
-#     #     for operation in path.values():
-#     #         if "security" not in operation:
-#     #             operation["security"] = [{"BearerAuth": []}]
+#         # Health endpoints that require auth
+#         "/system-info"  # Add this line
+
+#     ]
+    
+#     # Use the same matching logic that worked for temperature endpoints
+#     for path_key, path_item in openapi_schema["paths"].items():
+#         if any(path_key.startswith(endpoint.replace("{", "{").replace("}", "}")) for endpoint in protected_endpoints):
+#             for method, operation in path_item.items():
+#                 if method in ["get", "post", "put", "delete", "patch"]:
+#                     operation["security"] = [{"BearerAuth": []}]
     
 #     app.openapi_schema = openapi_schema
 #     return app.openapi_schema
+
+
+
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    
+    openapi_schema = get_openapi(
+        title="Temperature Monitoring API",
+        version="1.0.0",
+        description="API for temperature monitoring system",
+        routes=app.routes,
+    )
+    
+ 
+    openapi_schema["components"]["securitySchemes"] = {
+        "BearerAuth": {
+            "type": "http",
+            "scheme": "bearer",
+            "bearerFormat": "JWT",
+            "description": "Enter your API token with the 'Bearer ' prefix"
+        }
+    }
+    
+
+    protected_endpoints = [
+        # Temperature endpoints
+        "/api/v1/temperature",
+        "/api/v1/temperature/latest", 
+        "/api/v1/temperature/facility/{facility_id}",
+        "/api/v1/temperature/unit/{unit_id}",
+        "/api/v1/temperature/stats",
+        "/api/v1/temperature/aggregate",
+        "/api/v1/admin/temperature",
+        
+        # Facilities endpoints
+        "/api/v1/facilities",
+        "/api/v1/facilities/{facility_id}",
+        "/api/v1/facilities/{facility_id}/detailed",
+        "/api/v1/facilities/{facility_id}/units",
+        "/api/v1/units/{unit_id}",
+        
+        # Customer endpoints
+        "/api/v1/customers/profile",
+        "/api/v1/customers/tokens",
+        "/api/v1/customers/tokens/{token_id}",
+        
+        # Analytics endpoints
+        "/api/v1/analytics/temperature/summary",
+        "/api/v1/analytics/temperature/trends",
+        "/api/v1/analytics/alarms/history",
+        "/api/v1/analytics/performance",
+        
+        # Admin endpoints
+        "/api/v1/admin/customers",
+        "/api/v1/admin/customers/{customer_id}",
+        "/api/v1/admin/customers/{customer_id}/tokens",
+        "/api/v1/admin/facilities",
+        "/api/v1/admin/config",
+        "/api/v1/admin/config/{key}",
+        "/api/v1/admin/ingestion/logs",
+        "/api/v1/admin/analytics/temperature/summary",
+        
+        # Health endpoints, will require auth
+        "/system-info"  
+    ]
+    
+    # Use the same matching logic that worked for temperature endpoints
+    for path_key, path_item in openapi_schema["paths"].items():
+        # should ideally come from customer_token table >> accessible_units (todo)
+        if path_key == "/system-info":
+            for method, operation in path_item.items():
+                if method in ["get", "post", "put", "delete", "patch"]:
+                    operation["security"] = [{"BearerAuth": []}]
+                    print(f"Applied security to /system-info {method}")  
+
+        elif any(path_key.startswith(endpoint.replace("{", "{").replace("}", "}")) for endpoint in protected_endpoints):
+            for method, operation in path_item.items():
+                if method in ["get", "post", "put", "delete", "patch"]:
+                    operation["security"] = [{"BearerAuth": []}]
+    
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+
 
 app.openapi = custom_openapi
 
