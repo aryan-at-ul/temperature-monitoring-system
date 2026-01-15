@@ -141,7 +141,7 @@ INFO: Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
 INFO: Application startup complete.
 ```
 
-API Documentation: http://localhost:8000/docs
+API Documentation: open in browser, running on local: http://localhost:8000/docs
 
 ### Terminal 4: Web Dashboard
 ```bash
@@ -155,7 +155,7 @@ python dashboard/app.py
 * Debug mode: on
 ```
 
-Dashboard: http://localhost:5000
+Dashboard: open in browser, running on local: http://localhost:5000
 
 ## Usage Examples
 
